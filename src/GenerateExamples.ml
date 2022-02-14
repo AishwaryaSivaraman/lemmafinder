@@ -8,11 +8,11 @@ let construct_data_collection vars typs var_typs =
                                         in 
                                         (acc ^ pipe ^ Consts.fmt ("\"%s:\" ++ \"(\" ++ show %s ++ \")\"") n_var n_var), (index+1)
                  ) ("", 0) var_typs
-  in let var_string = List.fold_left (fun acc v -> acc ^ " " ^ v) "" (List.tl vars)
+  in let var_string = List.fold_left (fun acc v -> acc ^ " " ^ v) "" vars
   in let var_typs_string = List.fold_left (fun acc v -> acc ^ " " ^ v) "" var_typs
-  in let func_signature = Consts.fmt ("Definition collect_data %s :=\n") var_typs_string
-  in Consts.fmt ("%s let lfind_var := %s\n in let lfind_v := print %s lfind_var\n in lfind_state lfind_v %s.\n")
-  func_signature examples (List.hd vars) var_string
+  in let func_signature = Consts.fmt ("Definition collect_data (dummy:nat) %s :=\n") var_typs_string
+  in Consts.fmt ("%s let lfind_var := %s\n in let lfind_v := print dummy lfind_var\n in lfind_state lfind_v %s.\n")
+  func_signature examples var_string
 
 let lfind_extract_examples p_ctxt =
 let lfind_content = "
@@ -45,7 +45,7 @@ let generate_example p_ctxt typs modules current_lemma var_typs vars =
   in let start_index = ((String.index (List.hd (var_typs)) ':')+1)
   in let end_index = (String.index (List.hd (var_typs)) ')')
   in let hd_parameter = String.sub (List.hd (var_typs)) start_index (end_index - start_index)
-  in let parameter_print = Consts.fmt ("Parameter print : %s -> string -> %s.\n") hd_parameter hd_parameter
+  in let parameter_print = "Parameter print : nat -> string -> nat.\n"
   
   in let typ_quickchick_content = Consts.fmt ("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n") Consts.lfind_declare_module import_file module_imports current_lemma quickchick_import 
   qc_include Consts.def_qc_num_examples typ_derive
