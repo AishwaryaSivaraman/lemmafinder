@@ -74,7 +74,12 @@ let construct_state_as_lemma gl =
                                   with _ ->
                                   acc_H, acc_V, acc_typs, acc_var_typs
                  ) ([],[],[],[]) hyps
-  in let hyps = List.append var_typs hyps
+  in let var_typs_hyps, other_hyps = List.fold_right2 (fun var var_typ (vt_hyps, hs) ->
+    let v_hyps, other_hyps = List.partition
+      (fun h -> Str.string_match (Str.regexp ("([^:]+:[^ ]+ " ^ var ^ ")")) h 0) hs in
+      print_endline @@ var ^ " " ^ var_typ ^ " " ^ (String.concat ", " v_hyps); print_endline @@ "others: " ^ (String.concat ", " other_hyps);
+    (var_typ :: v_hyps) :: vt_hyps, other_hyps) vars var_typs ([], hyps)
+  in let hyps = List.append (List.concat var_typs_hyps) other_hyps
   in let typs = List.fold_left (fun acc v -> 
   let typ_name = v
     (* if String.equal v "bool," then "bool" else v  *)
@@ -84,17 +89,17 @@ let construct_state_as_lemma gl =
        let var_forall = List.fold_left (fun acc v -> acc ^ " " ^ v) "forall" vars
        in if List.length vars > 0 then
        let lemma = Consts.fmt "Lemma %s:  %s, %s.\nAdmitted." Consts.lfind_lemma var_forall conc
-       in lemma, lemma, typs, var_typs, vars
+       in lemma, lemma, typs, hyps, vars
        else
        let lemma = Consts.fmt "Lemma %s: %s.\nAdmitted." Consts.lfind_lemma conc
-       in lemma, lemma, typs, var_typs, vars
+       in lemma, lemma, typs, hyps, vars
      )
     else
     (
       let vars_all = ""
         (* List.fold_left (fun acc v -> acc ^ " " ^ v)  "" vars *)
       in let hyps_str = String.concat " " hyps
-      in (Consts.fmt "Lemma %s %s %s:%s.\nAdmitted." Consts.lfind_lemma vars_all hyps_str conc), Consts.fmt "Lemma %s (dummy:nat) %s %s:and (@eq nat dummy dummy) (%s).\nAdmitted." Consts.lfind_lemma vars_all hyps_str conc, typs, var_typs, vars
+      in (Consts.fmt "Lemma %s %s %s:%s.\nAdmitted." Consts.lfind_lemma vars_all hyps_str conc), Consts.fmt "Lemma %s (dummy:nat) %s %s:and (@eq nat dummy dummy) (%s).\nAdmitted." Consts.lfind_lemma vars_all hyps_str conc, typs, hyps, vars
     )
 
 let lfind_tac debug : unit Proofview.tactic =
@@ -107,7 +112,7 @@ let lfind_tac debug : unit Proofview.tactic =
     else
       begin
         Utils.env_setup;
-        let curr_state_lemma, curr_state_lemma_dummy, typs, var_typs, vars = construct_state_as_lemma gl
+        let curr_state_lemma, curr_state_lemma_dummy, typs, hyps, vars = construct_state_as_lemma gl
         in print_endline curr_state_lemma;
         let p_ctxt, c_ctxt = construct_proof_context gl
         in Log.stats_log_file := p_ctxt.dir ^ Consts.log_file;
@@ -147,7 +152,7 @@ let lfind_tac debug : unit Proofview.tactic =
         if not (Sys.file_exists example_file) && (List.length vars) > 0 then 
         (
           print_endline "Example file not found, generating";
-          let op = GenerateExamples.generate_example p_ctxt typs module_names curr_state_lemma_dummy var_typs vars
+          let op = GenerateExamples.generate_example p_ctxt typs module_names curr_state_lemma_dummy hyps vars
           in print_endline (string_of_int (List.length op));
           let is_success = List.fold_left (fun acc l -> acc || (Utils.contains l "lemmafinder_success") ) false op
           in
