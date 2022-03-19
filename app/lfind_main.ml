@@ -106,7 +106,8 @@ let lfind_tac debug : unit Proofview.tactic =
       begin
         Utils.env_setup;
         let curr_state_lemma, typs, var_typs, vars = construct_state_as_lemma gl
-        in print_endline curr_state_lemma;
+        in Consts.lfind_curr_state_lemma:=curr_state_lemma;
+        print_endline curr_state_lemma;
         let p_ctxt, c_ctxt = construct_proof_context gl
         in Log.stats_log_file := p_ctxt.dir ^ Consts.log_file;
         Log.error_log_file := p_ctxt.dir ^ Consts.error_log_file;

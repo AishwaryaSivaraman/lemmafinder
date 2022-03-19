@@ -180,10 +180,22 @@ let filter_valid_conjectures synthesized_conjectures p_ctxt original_conjecture 
 
 
 let filter_provable_conjectures valid_conjectures p_ctxt original_conjecture =
-  let n_cores = (Utils.cpu_count () / 2)
+  let content, conjec_ids = List.fold_left (
+    fun (acc1, acc2) (_, conj) -> 
+      let l = Provable.get_axiom_lemma conj !Consts.lfind_curr_state_lemma 
+      in acc1 ^ " " ^ l, conj.conjecture_name::acc2
+   ) ("",[]) valid_conjectures 
+  in
+  let tbl = Provable.check_lfind_theorem_add_axiom p_ctxt conjec_ids content
+  in 
+  List.map (
+            fun (s, conj) ->
+            s, conj, Hashtbl.find tbl conj.conjecture_name
+          ) valid_conjectures
+  (* let n_cores = (Utils.cpu_count () / 2)
   in Parmap.parmap ~ncores:1
   (fun (s, conj) -> let is_provable = (Provable.check_lfind_theorem_add_axiom p_ctxt conj.conjecture_name conj.conjecture_str)
-  in s, conj, is_provable) (Parmap.L valid_conjectures)
+  in s, conj, is_provable) (Parmap.L valid_conjectures) *)
 
 let synthesize_lemmas (synth_count: int ref)
                       (conjecture: conjecture)

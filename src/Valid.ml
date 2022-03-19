@@ -45,8 +45,19 @@ let validity_stats conjectures p_ctxt =
                        ) (Parmap.L conjectures)
 
 let helpful_lemma_stats stats p_ctxt = 
-  let n_cores = (Utils.cpu_count () / 2)
-  in Parmap.parmap ~ncores:n_cores
+  let content, conjec_ids = List.fold_left (
+    fun (acc1, acc2) s -> 
+      let l = Provable.get_axiom_lemma s.conjecture !Consts.lfind_curr_state_lemma 
+      in acc1 ^ " " ^ l, s.conjecture.conjecture_name::acc2
+   ) ("",[]) stats 
+  in
+  let tbl = Provable.check_lfind_theorem_add_axiom p_ctxt conjec_ids content
+  in 
+  List.map (
+            fun s -> if Hashtbl.find tbl s.conjecture.conjecture_name then {s with is_provable = true;}
+            else s
+          ) stats
+  (* Parmap.parmap ~ncores:n_cores
           (
             fun s -> 
             if (s.is_valid) then 
@@ -57,7 +68,7 @@ let helpful_lemma_stats stats p_ctxt =
             )
             else
             s
-          ) (Parmap.L stats)
+          ) (Parmap.L stats) *)
 
 let lemma_provable_stats stats p_ctxt = 
   let n_cores = (Utils.cpu_count () / 2)
