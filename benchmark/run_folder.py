@@ -74,6 +74,7 @@ def run(source_folder, helper_lemma_dict, log_directory, all_lemmas_from_file, e
     for file in helper_lemma_dict:
         file_name = os.path.basename(file)
         print(file_name)
+        file_rel_path = os.path.relpath(file, source_folder)
         helper_lemma_locations = helper_lemma_dict[file]
         if ".v" in file :
             with open(file) as f:
@@ -125,7 +126,7 @@ def run(source_folder, helper_lemma_dict, log_directory, all_lemmas_from_file, e
                     index = index + 1
                 lfind_content.extend(content[index:])
                 print(f"destination folder is {destination_folder}")
-                write_lemmafinder_content(os.path.join(destination_folder, file_name),lfind_content)
+                write_lemmafinder_content(os.path.join(destination_folder, file_rel_path),lfind_content)
                 debug_log_folder = os.path.join(os.path.dirname(source_folder),"_lfind_" + str(os.path.basename(source_folder))+"_lf_" + os.path.splitext(file_name)[0] + "_" + location[0].replace("'","") + "_" + str(location[1]) + "_"+lemma_name)
                 log_file = f"{debug_log_folder}/lfind_summary_log.txt"
                 make_log_file = f"{log_directory}/lfind_benchmark_log"
