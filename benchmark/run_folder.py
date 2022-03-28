@@ -147,7 +147,7 @@ def run(source_folder, helper_lemma_dict, log_directory, all_lemmas_from_file, e
                     try:
                         stuck_state_file = os.path.join(stuck_folder, "lfind_state.v")
                         stuck_state = get_stuck_state(stuck_state_file)
-                        error_content = [all_lemmas_from_file[location[0]],all_lemmas_from_file[location[2]],make_cmd,stuck_state]
+                        error_content = [all_lemmas_from_file[os.path.splitext(file_name)[0] + '_' + location[0]],all_lemmas_from_file[os.path.splitext(file_name)[0] + '_' + location[2]],make_cmd,stuck_state]
                         if "Rewrite_Fail" in result:
                             rewriter_failures.append(error_content)
                         elif "Invalid_MLFile" in result:
