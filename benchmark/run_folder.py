@@ -121,7 +121,7 @@ def run(source_folder, helper_lemma_dict, log_directory, all_lemmas_from_file, e
                 next_valid_index_found = False
                 index = lemma_line + 1
                 while not next_valid_index_found:
-                    if "Qed" in content[index] or "Admit" in content[index]:
+                    if any(x in content[index] for x in ["Qed", "Admit", "Defined"]):
                         next_valid_index_found = True
                     index = index + 1
                 lfind_content.extend(content[index:])
