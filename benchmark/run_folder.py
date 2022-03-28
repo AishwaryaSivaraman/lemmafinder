@@ -130,7 +130,7 @@ def run(source_folder, helper_lemma_dict, log_directory, all_lemmas_from_file, e
                 debug_log_folder = os.path.join(os.path.dirname(source_folder),"_lfind_" + str(os.path.basename(source_folder))+"_lf_" + os.path.splitext(file_name)[0] + "_" + location[0].replace("'","") + "_" + str(location[1]) + "_"+lemma_name)
                 log_file = f"{debug_log_folder}/lfind_summary_log.txt"
                 make_log_file = f"{log_directory}/lfind_benchmark_log"
-                make_cmd = f"cd {destination_folder} && make > {make_log_file}"
+                make_cmd = f"cd {destination_folder} && make 2>&1 | tee -a {make_log_file}"
                 print(make_cmd)
                 if not is_run_make:
                     result = ""
