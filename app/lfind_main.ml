@@ -137,27 +137,6 @@ let lfind_tac debug : unit Proofview.tactic =
           )
         )        
         );
-
-        (* if example file exists use it, else generate examples *)
-        let example_file = Consts.fmt "%s/examples_%s.txt" p_ctxt.dir p_ctxt.fname
-        in 
-        if not (Sys.file_exists example_file) && (List.length vars) > 0 then 
-        (
-          print_endline "Example file not found, generating";
-          let op = GenerateExamples.generate_example p_ctxt typs module_names curr_state_lemma var_typs vars
-          in print_endline (string_of_int (List.length op));
-          let is_success = List.fold_left (fun acc l -> acc || (Utils.contains l "lemmafinder_success") ) false op
-          in
-          if not is_success then raise (Invalid_Examples "Quickchick failed to generate examples!") else 
-          Feedback.msg_info (Pp.str "lemmafinder_example_generation_success")
-        )
-        else
-        ();
-
-        let coq_examples = Examples.dedup_examples (FileUtils.read_file example_file)
-        in let ml_examples = Examples.get_ml_examples coq_examples p_ctxt
-        in LogUtils.write_tbl_list_to_log coq_examples "Coq Examples";
-        LogUtils.write_tbl_list_to_log ml_examples "ML Examples";
         
         let op = FileUtils.run_cmd "export is_lfind=true"
         in let abstraction = Abstract_NoDup.abstract
@@ -174,11 +153,6 @@ let lfind_tac debug : unit Proofview.tactic =
         in FileUtils.write_to_file curr_state_lemma_file content;
         Consts.lfind_lemma_content := content;
 
-        (* get ml and coq version of the output of generalized terms *)
-        let coq_examples, ml_examples = (ExampleUtils.evaluate_terms generalized_terms coq_examples ml_examples p_ctxt)
-        in List.iter (fun c -> LogUtils.write_tbl_to_log c "COQE") coq_examples;
-        List.iter (fun c -> LogUtils.write_tbl_to_log c "MLE") ml_examples;
-        
         let valid_conjectures, invalid_conjectures = (Valid.split_as_true_and_false conjectures p_ctxt)
         in
         let start_time_synth = Unix.time ()
@@ -192,7 +166,7 @@ let lfind_tac debug : unit Proofview.tactic =
           if elapsed_time < 5100 then
           (print_endline c.conjecture_name;
           Log.debug (Consts.fmt "Cache size is %d\n" (Hashtbl.length !cached_lemmas));
-          (Synthesize.synthesize cached_lemmas p_ctxt ml_examples coq_examples c);)
+          (Synthesize.synthesize cached_lemmas p_ctxt [] [] c);)
           else ()
         )
         invalid_conjectures ;

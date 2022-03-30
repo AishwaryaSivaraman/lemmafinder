@@ -195,7 +195,7 @@ let synthesize_lemmas (synth_count: int ref)
   
   Log.debug (Consts.fmt "Synth term is %s\n" (Sexp.string_of_sexpr curr_synth_term));
   let all_vars = List.append p_ctxt.vars conjecture.lfind_vars
-  in let _, output_examples = (Evaluate.evaluate_coq_expr curr_synth_term coq_examples p_ctxt all_vars conjecture.sigma (Some conjecture))
+  in let output_examples = []
   
   in let vars_for_synthesis = (get_variables_except_expr conjecture.body_sexp curr_synth_term [] p_ctxt.vars conjecture.lfind_vars)
   in let vars_for_synthesis = if Int.equal (List.length vars_for_synthesis) 0 then
@@ -211,7 +211,7 @@ let synthesize_lemmas (synth_count: int ref)
   with _ -> (Hashtbl.find conjecture.all_expr_type_table (String.sub subst_synthesis_term 1 ((String.length subst_synthesis_term) -2)))  
   in 
   Hashtbl.add var_types synthesis_op ( try TypeUtils.get_return_type "" (Sexp.of_string output_type) with _ -> output_type);
-  let myth_examples = Examples.gen_synthesis_examples ml_examples output_examples vars_for_synthesis conjecture.sigma
+  let myth_examples = []
   in LogUtils.write_list_to_log myth_examples "myth examples";
   
   let vars_for_synthesis = List.append vars_for_synthesis [synthesis_op]

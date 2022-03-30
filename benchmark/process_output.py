@@ -120,6 +120,9 @@ def get_helper_lemma(prelude):
     for f in os.listdir(prelude):
          if f.endswith(".txt") and "examples" in f:
              lemma_filename = f.replace(".txt", "").replace("examples_", "")
+    if lemma_filename == "":
+        lemma_filename = orig_lemma_name.split("_lf_")[1]
+        lemma_filename = lemma_filename.split("_")[0]
     theorem_name = ""
     alternate_theorem_name = ""
     for k in benchmark_lemmas:
@@ -345,8 +348,6 @@ def run(lfind_op, log_dir):
                             print(f"helper was not found {helper_lemma_name}")
                             print(f_name)
                             print(benchmark_file)
-                            # import sys
-                            # sys.exit(0) 
                     imports = get_imports(lfind_state)
                     log_obj = get_ranked_lemmmas(l_file)
                     log_obj.sort_lemmas()
