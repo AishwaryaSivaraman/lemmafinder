@@ -47,9 +47,9 @@ class LogDetails(object):
         return [self.log_dir,self.is_stuck_provable,self.no_gen_provable,self.no_synth_provable, self.no_gen_useful_stuck_provable,self.no_syn_useful_stuck_provable,len(self.valid_lemmas), self.matches_human, self.matched_lemma,self.matched_lemma_loc,self.stronger_lemma,self.stronger_lemma_loc,self.weaker_lemma, self.weaker_lemma_loc, self.helper_name, self.helper_lemma, self.is_auto_provable, self.top_answer, self.total_synth, self.total_gen]
     
     def sort_lemmas(self):
-        sorted(self.provable_lemmas, key=compare_lemmas)
-        sorted(self.useful_stuck_provable_lemmas, key=compare_lemmas)
-        sorted(self.valid_lemmas, key=compare_lemmas)
+        self.provable_lemmas = sorted(self.provable_lemmas, key=compare_lemmas)
+        self.useful_stuck_provable_lemmas = sorted(self.useful_stuck_provable_lemmas, key=compare_lemmas)
+        self.valid_lemmas = sorted(self.valid_lemmas, key=compare_lemmas)
 
 def get_lemmas(benchmark_file):
     import json
@@ -120,6 +120,8 @@ def get_helper_lemma(prelude):
     for f in os.listdir(prelude):
          if f.endswith(".txt") and "examples" in f:
              lemma_filename = f.replace(".txt", "").replace("examples_", "")
+         if f.endswith("_wsynth.ml"):
+             lemma_filename = f.replace("_wsynth.ml", "")
     if lemma_filename == "":
         lemma_filename = orig_lemma_name.split("_lf_")[1]
         lemma_filename = lemma_filename.split("_")[0]
