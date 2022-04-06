@@ -42,6 +42,7 @@ def run(lfind_op):
                 gen_not_dispro = 0
                 total_no_gen = 0
                 total_no_lemmas+=1
+                is_cat_1 = False
                 for l in contents:
                     if "Time to first category" in l and ":" in l:
                         time_to_first = float(l.split(":")[1].strip())
@@ -51,13 +52,17 @@ def run(lfind_op):
                             time_to_first = total_time
                         else:
                             print(log_summary)
+                            is_cat_1 = True
                             cat_1 += 1
                     elif "#Synthesized Lemmas not disprovable" in l and ":" in l:
+                        if is_cat_1:
+                            time_to_firsts.append(time_to_first/60.0)
+                            total_times.append(time_to_first/60.0)
+                        else:
+                            total_times.append(total_time/60.0)
                         if int(l.split(":")[1].strip()) !=0:
                             synth = int(l.split(":")[1].strip())
                             total_synth_not_dispro.append(synth)
-                            time_to_firsts.append(time_to_first/60.0)
-                            total_times.append(total_time/60.0)
                             total_gen_not_dispro.append(gen_not_dispro)
                             total_gen.append(total_no_gen)
                             qc = total_no_gen + (total_no_gen-gen_not_dispro)*15
@@ -87,6 +92,8 @@ def run(lfind_op):
     print(stats.describe(total_quickchick))
     print("#Category 1 ")
     print(cat_1)
+    print(total_times)
+    print(time_to_firsts)
     return 
 
 
