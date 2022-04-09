@@ -32,6 +32,33 @@ let add_synthesis_term acc gen_vars term type_tbl topconj =
                   )
         )
 
+let rec get_all_terms_to_synthesize (acc : Sexp.t list list) (conjecture: Sexp.t list)
+        (gen_vars: string list) type_tbl topconj add_atoms
+        : Sexp.t list list =
+match conjecture with
+| (Atom a) :: tl -> if add_atoms then
+(
+let new_acc, is_added = (add_synthesis_term acc gen_vars [Atom a] type_tbl topconj)
+in get_all_terms_to_synthesize new_acc tl gen_vars type_tbl topconj add_atoms
+)
+else
+get_all_terms_to_synthesize acc tl gen_vars type_tbl topconj add_atoms
+| [Expr [Atom _; Atom _; (Expr head); Atom var]] ->
+let new_acc, _ = (add_synthesis_term acc gen_vars [Atom var] type_tbl topconj)
+  in let new_acc, _ = (add_synthesis_term new_acc gen_vars head type_tbl topconj)
+        in get_all_terms_to_synthesize new_acc head gen_vars type_tbl topconj add_atoms
+| [Expr [Atom _; Atom _; Atom var; (Expr head)]] ->
+                                  let new_acc, _ = (add_synthesis_term acc gen_vars [Atom var] type_tbl topconj)
+                                      in let new_acc, _ = (add_synthesis_term new_acc gen_vars head type_tbl topconj)
+                                            in get_all_terms_to_synthesize new_acc head gen_vars type_tbl topconj add_atoms
+| (Expr head) :: tl ->
+ (
+  let new_acc, is_added = (add_synthesis_term acc gen_vars head type_tbl topconj)
+  in let head_terms = get_all_terms_to_synthesize new_acc head gen_vars type_tbl topconj add_atoms
+  in get_all_terms_to_synthesize head_terms tl gen_vars type_tbl topconj add_atoms
+ )
+| [] -> acc
+
 (* 
    We pick terms based on the size. 
    Add the largest expression that can be replaced for synthesis. 
@@ -284,10 +311,10 @@ let synthesize cached_lemmas p_ctxt ml_examples coq_examples conjecture=
   Log.debug(Consts.fmt "#Coq Input Examples %d\n" (List.length coq_examples));
   Log.debug(Consts.fmt "#ML Input Examples %d\n" (List.length ml_examples));
   (
-    let first_synth_terms = get_terms_to_synthesize [] conjecture.body_sexp conjecture.lfind_vars conjecture.all_expr_type_table conjecture.body_sexp false
+    let first_synth_terms = get_all_terms_to_synthesize [] conjecture.body_sexp conjecture.lfind_vars conjecture.all_expr_type_table conjecture.body_sexp false
     (* If there are zero synthesis expressions, we add generalized variables to synthesis *)
     in let synth_terms = if List.length first_synth_terms == 0 
-                         then get_terms_to_synthesize [] conjecture.body_sexp conjecture.lfind_vars conjecture.all_expr_type_table conjecture.body_sexp true 
+                         then get_all_terms_to_synthesize [] conjecture.body_sexp conjecture.lfind_vars conjecture.all_expr_type_table conjecture.body_sexp true 
                          else first_synth_terms
     in Log.debug (Consts.fmt "Size of synth terms is %d" (List.length synth_terms));
     let sorted_synth_terms = LatticeUtils.sort_by_size synth_terms
