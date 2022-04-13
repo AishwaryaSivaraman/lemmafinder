@@ -62,7 +62,7 @@ let get_synthesized_provable_lemmas stats=
                     (List.fold_left 
                         (fun (acc_synth,len) s_stat -> 
                             let l = len + (List.length s_stat.provable_lemmas)
-                            in List.append s_stat.provable_lemmas acc, l
+                            in List.append s_stat.provable_lemmas acc_synth, l
                         ) (acc, 0) g_stat.synthesis_stats
                     )
                     in new_acc, len + l
