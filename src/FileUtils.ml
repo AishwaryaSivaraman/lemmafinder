@@ -13,19 +13,30 @@ let remove_file fname : unit =
 
 let rec input_lines l ic : string list =
   match input_line ic with
-  | line -> input_lines (line :: l) ic
+  | line -> print_endline ("reading line" ^ line); input_lines (line :: l) ic
   | exception End_of_file -> List.rev l
 
-let run_cmd cmd =
+(* let run_cmd cmd =
   Log.debug(Consts.fmt "%s\n" cmd);
   try 
   let inp =  Unix.open_process_in cmd
-  in let r = input_lines [] inp in
+  in print_endline "run_cmd2"; let r = input_lines [] inp in print_endline "run_cmd3";
   close_in inp; 
+  print_endline "run_cmd4";
   r
   with
-  | _ -> []
+  | _ -> [] *)
   
+let run_cmd cmd : string list =
+  Log.debug(Consts.fmt "%s\n" cmd);
+  let inp =  Unix.open_process_in cmd in
+  let try_read () =
+    try Some (input_line inp) with End_of_file -> None in
+  let rec loop acc = match try_read () with
+    | Some s -> loop (s :: acc)
+    | None -> close_in inp; List.rev acc in
+  loop []
+
 
 let rm_dir dir =
   let cmd = "rm -rf " ^ dir

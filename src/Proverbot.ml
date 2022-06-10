@@ -15,7 +15,7 @@ let search prelude proverbot fname axiom_opt conjecture_name =
   let python = "python3 "
   in let script = proverbot ^ "src/search_file.py "
   in let weights_file  = proverbot ^"data/polyarg-weights.dat "
-  in let cmd = Consts.fmt "timeout 15 %s %s --prelude=%s --weightsfile=%s %s %s -P -o %s/search-report-%s-%s" python script prelude weights_file fname axiom_opt prelude conjecture_name rnd_str
+  in let cmd = Consts.fmt "timeout 15 %s %s --prelude=%s --weightsfile=%s %s %s --no-generate-report -P -o %s/search-report-%s-%s" python script prelude weights_file fname axiom_opt prelude conjecture_name rnd_str
   in let run_op = run_cmd cmd
   in Log.debug(List.fold_left (fun acc c -> acc ^ (Consts.fmt "Line from stdout: %s\n" c)) "" run_op);
   Consts.fmt "search-report-%s-%s" conjecture_name rnd_str
