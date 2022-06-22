@@ -166,6 +166,11 @@ let get_synthesis_conjecture is_equal_conj op_type curr_synth_term conjecture va
                                 }
   in synthesized_expr, synthesis_conjecture
 
+let rec filter_duplicate_body conjectures = 
+  match conjectures with
+  | [] -> []
+  | (c, x) :: xs -> if List.mem x.body (List.map (fun (_, y) -> y.body) xs) then (filter_duplicate_body xs) else (c, x) :: (filter_duplicate_body xs)
+
 let filter_cached_lemmas conjectures cached_lemmas = 
   List.filter (fun (s, conj) -> try
                         let _ = (Hashtbl.find cached_lemmas conj.body)
@@ -303,10 +308,12 @@ let synthesize_lemmas (synth_count: int ref)
   let filtered_conjectures = filter_cached_lemmas filter_trivial_simplify !cached_lemmas
   in
   Consts.is_dup := !Consts.is_dup + (List.length(filter_trivial_simplify) - List.length(filtered_conjectures));
-  List.iter (fun (_,c) -> Hashtbl.replace !cached_lemmas c.body true;) filtered_conjectures;
+  let more_filtered_conjectures = filter_duplicate_body filtered_conjectures in
+  Consts.is_dup := !Consts.is_dup + (List.length(filtered_conjectures) - List.length(more_filtered_conjectures));
+  List.iter (fun (_,c) -> Hashtbl.replace !cached_lemmas c.body true;) more_filtered_conjectures;
 
   (* Identify synthesized lemmas that can help prove the stuck state *)
-  let provable_conjectures = filter_provable_conjectures filtered_conjectures p_ctxt conjecture
+  let provable_conjectures = filter_provable_conjectures more_filtered_conjectures p_ctxt conjecture
   in let p_conjectures, provable_conjectures = List.fold_right (fun (s, c, is_provable) (p_acc, pro_acc) -> 
       if is_provable
       then (c::p_acc, (s, c)::pro_acc)
@@ -318,7 +325,7 @@ let synthesize_lemmas (synth_count: int ref)
   in let synth_stat = {
                         synthesis_term = (Sexp.string_of_sexpr curr_synth_term);
                         enumerated_exprs = enumerated_exprs;
-                        valid_lemmas = filtered_conjectures;
+                        valid_lemmas = more_filtered_conjectures;
                         original_valid_lemmas = valid_conjectures;
                         provable_lemmas = provable_conjectures;
                         prover_provable_lemmas = prover_provable_conjectures;
