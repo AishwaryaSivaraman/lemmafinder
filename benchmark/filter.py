@@ -34,6 +34,12 @@ def is_trivial(lemma, prelude, imports):
         except coq_serapy.CoqExn:
             return False 
 
+def is_eq(expr):
+    return "eq" in expr
+    # import re
+    # match = re.match('([^,]*,)?[ ]?eq[]', expr)
+    # return match
+
 def simplify_lemma(lemma, prelude, imports):
     lemmaname = lemma.split(":")[0]
     with coq_serapy.SerapiContext(
@@ -43,7 +49,25 @@ def simplify_lemma(lemma, prelude, imports):
         for imp in imports:
             coq.run_stmt(imp)
         coq.run_stmt(lemma + ".")
+        coq.run_stmt("intros.")
         coq.run_stmt("simpl.")
+        if is_eq(coq.goals):
+            body = coq.goals.split("eq")[1].strip()
+            if body[0] == "(":
+                parans = 1
+                for i in range(1, len(body)):
+                    if parans == 0:
+                        left, right = body[:i].strip(), body[i:].strip()
+                        break
+                    elif body[i] == ")":
+                        parans -= 1
+                    elif body[i] == "(":
+                        parans += 1
+                pass
+            else:
+                left, right = body.split(" ", 1)
+            if len(left) > len(right):
+                coq.run_stmt("symmetry.")
         return lemmaname, coq.goals.strip()
 
 def is_proof_complete(prelude, imports, proof_cmds, stmts=[]):
@@ -185,5 +209,29 @@ def main():
             print(f"FilteredLemma${name}${stmt}")
     print("end simplified lemmas")
 
+
+import sys
+
+def trace_calls(frame, event, arg):
+    if event != 'call':
+        return
+    co = frame.f_code
+    func_name = co.co_name
+    if func_name == 'write':
+        # Ignore write() calls from print statements
+        return
+    func_line_no = frame.f_lineno
+    func_filename = co.co_filename
+    caller = frame.f_back
+    if not caller:
+        return
+    caller_line_no = caller.f_lineno
+    caller_filename = caller.f_code.co_filename
+    with open('/home/yousef/mylog', 'a') as f:
+        f.write('Call to %s on line %s of %s from line %s of %s' % \
+        (func_name, func_line_no, func_filename,
+         caller_line_no, caller_filename))
+    return
 if __name__ == "__main__":
+    # sys.settrace(trace_calls)
     main()
