@@ -36,7 +36,7 @@ let filter_lemmas conjectures
                   =
   let lemmas = List.fold_left (fun acc (_,c) -> acc ^ " \"" ^ c.conjecture_str ^ "\"") "" conjectures
   in let run_op = run lemmas imports prelude theorem_name theorem
-  in
+  in List.iter print_endline run_op;
   let simplified_lemmas, trivial_count, is_version_count = List.fold_left (
                      fun (acc, t_count, v_count) l ->
                       if Utils.contains l ":trivial_count" then

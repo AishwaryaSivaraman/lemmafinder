@@ -308,7 +308,7 @@ let synthesize_lemmas (synth_count: int ref)
   let filtered_conjectures = filter_cached_lemmas filter_trivial_simplify !cached_lemmas
   in
   Consts.is_dup := !Consts.is_dup + (List.length(filter_trivial_simplify) - List.length(filtered_conjectures));
-  Log.ylog "Filtered Conjectures: "; List.iter (fun (s, c) -> Log.ylog c.conjecture_str; Log.ylog c.body) filtered_conjectures;
+  (* Log.ylog "Filtered Conjectures: "; List.iter (fun (s, c) -> Log.ylog c.conjecture_str; Log.ylog c.body) filtered_conjectures; *)
   let more_filtered_conjectures = filter_duplicate_body filtered_conjectures in 
   Consts.is_dup := !Consts.is_dup + (List.length(filtered_conjectures) - List.length(more_filtered_conjectures));
   List.iter (fun (_,c) -> Hashtbl.replace !cached_lemmas c.body true;) more_filtered_conjectures;

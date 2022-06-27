@@ -4,6 +4,8 @@ from functools import partial
 import coq_serapy
 import sys
 import argparse
+from multiprocessing import set_start_method
+set_start_method("spawn", force=True)
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -199,6 +201,7 @@ def main():
 
     # func = partial(process, prelude, imports, theorem_name, theorem)
     # simplified_lemmas = pool_obj.map(func, lemmas)
+    print("\n")
     print(f"{trivial_count}:trivial_count")
     print(f"{is_version_count}:is_version_count")
     print("start simplified lemmas")
