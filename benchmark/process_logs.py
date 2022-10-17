@@ -563,7 +563,7 @@ def read_logs_from_folder(log_dir):
     return total_times, time_to_firsts, total_lemmas_all, total_afterquickchick,total_after_other_filters
 
 def run_process_logs(log_dir, helper_lemma_locations, is_project, source_folder=""):
-    op_csv = os.path.join(log_dir, "lfind_benchmark_summary.csv")
+    # op_csv = os.path.join(log_dir, "lfind_benchmark_summary.csv")
     count_total_lfind_logs = 0
     total_lemmas = 0
     missing_lemmas = 0
@@ -597,12 +597,12 @@ def run_process_logs(log_dir, helper_lemma_locations, is_project, source_folder=
             else:
                 helper_lemma_name = helper_prefix + "_" + lemma_name
 
-            f_name_log = os.path.basename(stuck_folder).replace("_lfind_","")
-            l_log_file = os.path.join(log_dir, f_name_log)
-            if os.path.isfile(l_log_file):
-                # if the log has been processed skip it
-                print(l_log_file)
-                continue
+            # f_name_log = os.path.basename(stuck_folder).replace("_lfind_","")
+            # l_log_file = os.path.join(log_dir, f_name_log)
+            # if os.path.isfile(l_log_file):
+            #     # if the log has been processed skip it
+            #     print(l_log_file)
+            #     continue
 
             if isdir(destination_folder) and isdir(stuck_folder):
                 # carry out log analysis
