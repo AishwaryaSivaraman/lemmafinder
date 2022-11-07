@@ -114,14 +114,17 @@ let construct_state_as_lemma gl =
         (* List.fold_left (fun acc v -> acc ^ " " ^ v)  "" vars *)
       in !contanins_forall, (Consts.fmt "Lemma %s %s %s:%s.\nAdmitted." Consts.lfind_lemma vars_all (String.concat " " all_hyps) conc), typs, var_typs, vars, hyps_str
     )
-
-let lfind_tac (debug: bool) (synthesizer: string) : unit Proofview.tactic =
+  
+  (* debug = 0 if off, 1 if on;  synthesizer = synthesizer used; synth_batch_size = max size of synthesized expr; timeout = synthesizer timeout*)
+let lfind_tac (debug: int) (synthesizer: string) (synth_batch_size: int) (timeout: int): unit Proofview.tactic =
   Consts.start_time := int_of_float(Unix.time ());
-  Log.is_debug := debug;
+  Log.is_debug := debug = 1;
   Proofview.Goal.enter
   begin fun gl ->
+    Consts.myth_batch_size := synth_batch_size;
     Consts.synthesizer := synthesizer;
-    print_endline("The synthesizer used is " ^ !Consts.synthesizer);
+    Consts.synthesizer_timeout := string_of_int timeout;
+    print_endline("The synthesizer used is " ^ !Consts.synthesizer ^ " with myth batch size " ^ string_of_int !Consts.myth_batch_size);
     let is_running = Utils.get_env_var "is_lfind"
     in 
     if String.equal is_running "true" then Tacticals.New.tclZEROMSG (Pp.str ("LFind is already running! Aborting"))
@@ -241,4 +244,4 @@ let lfind_tac (debug: bool) (synthesizer: string) : unit Proofview.tactic =
 
         Tacticals.New.tclZEROMSG (Pp.str ("LFIND Successful."))
       end
-  end
+  end 

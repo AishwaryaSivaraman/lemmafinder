@@ -1,0 +1,77 @@
+
+INFORMATION ON LFIND TESTING SCRIPT 
+(there will probably be bugs or errors running on other peoples systems, so please let me know what those errors are so they can be fixed)
+
+<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+To use script similar to older script:
+    1) You need to have a folder or collection of folders that only include coq files (not _CoqProject or Makefiles or anything else)
+    2) For having a single folder, run:
+        $ cd {lemmafinder directory}
+        $ python3 testing_scripts/run.py --project={absolute path to directory with files} --result_folder={path to result/log folder}
+    3) For having a collection of folders, run:
+        $ cd {lemmafinder directory}
+        $ python3 testing_scripts/run.py --parent={absolute path to directory that holds benchmarks/directories} 
+            --benchmarks={list of folder ex. ="clam,lia,fulladder"} --result_folder={path to result/log folder}
+<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+To run with while making changes to lfind, there are two options:
+ 1) More similar to the original script, just run "make" within the folder that has lfind invoked in the coq file and delete the _lfind_ folder that was originally
+    created. This will just remake the _lfind_ folder for that example.
+ 2) You can run the script with the --clean tag. This will result in having a result folder that includes the old lfind_summary_logs. You can either rename your result 
+    folder or just rename the summary.csv (if that is all you care about), and then run the script again. This will generate either a new result folder or just new results,
+    which you can compare to the previous result folder or summary.csv.
+<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+To change the parameters that lfind is ran with, go to ../testing_scripts/run.py. At the top of the file there is a "set_lfind_parameters" function. There you can fill in the
+values of the parameters that you want lfind to run with for the test. There are default values in place if you do not want to do this.
+<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+Location of script: ../lemmafinder/testing_scripts/run.py
+
+How to use for different test cases (benchmark testing):
+    ~ SINGLE COQ FILE (for testing purposes (without lfind included))
+        $ cd {lemmafinder directory}
+        $ python3 testing_scripts/run.py --file={absolute path to file}
+    ~ FOLDER OF COQ FILES (for testing purposes (without lfind included))
+        $ cd {lemmafinder directory}
+        $ python3 testing_scripts/run.py --project={absolute path to directory with files}
+    ~ LIST OF FOLDERS WITH COQ FILES (for testing purposes (without lfind included))
+        $ cd {lemmafinder directory}
+        $ python3 testing_scripts/run.py --parent={absolute path to directory that holds benchmarks/directories} --benchmarks={list of folder ex. ="clam,lia,fulladder"}
+
+Optional Flags:
+    --result_folder={folder to store results}
+        ~ The default folder is the same location as the project (file or project) or parent directory (benchmarks) and has the name "RESULTS"
+    --clean
+        ~ Boolean flag indicating if the state should be cleaned
+        ~ If this flag is included, after running the script, you should see:
+            * Your input files and directories unchanged
+            * Within the log folder:
+                * summary.csv = a spreadsheet with high level results (number of lemmas synthesized in categories, etc.)
+                * lfind_benchmark_log_<...> = an output log for each run of lfind
+                * A folder for each helper lemma location with: 1) the coq file includig lfind and 2) the lfind_summary_log with the specific helper lemmas
+
+Files used in script (all in ../lemmafinder/testing_scripts): 
+    ~ collect_stats.py (re-using from prior testing script)
+    ~ prepare.py (contains linux based os.system() calls)
+    ~ add_lfind.py 
+    ~ run_lfind.py (contains linux based os.system() calls)
+    ~ process_results.py (contains linux based os.system() calls)
+
+How to see the useful results:
+    * Look in the log directory (either created or provided)
+        - summary.csv = has numerical data on amount of helper lemmas produced
+            -> DEVELOPER NOTE: if we want to add more data points, this can easily be done by parsing the ../lfind_summary_log.txt which is done in process_results.py (function parse_content)
+        - lfind_benchmark_log_<...> = useful for debugging if not getting results and want to see if lfind executed
+        - Folders for each run of lfind, includes:
+            -> The coq .v file that calls lfind = to see where lfind was used
+            -> lfind_summary_log.txt = shows the results of running lfind, specifically the helper lemmas synthesized
+
+Other files produced (if not using --clean):
+    * Makefiles and processing files will be included in the folder that was initially passed in as the input
+    * For each project/folder of coq files a "LFIND_FILES" folder is created that stores the following:
+        - For each place a helper lemma is used:
+            - A folder is produced (say "example_folder")
+                - Whichever location a helper lemma is used for in this folder is replaced with lfind (in that coq file)
+                - All other files from the original project with makefiles and such are copied into here as well
+            - A folder with lfind results is produced (called "_lfind_example_folder")
+                - Contains all by products of running lfind
+                - Includes the lfind_summary_log.txt which holds the results for this test

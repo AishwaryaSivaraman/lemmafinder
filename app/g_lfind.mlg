@@ -2,14 +2,25 @@ DECLARE PLUGIN "lfind_plugin"
 
 {
 open Ltac_plugin
+open Stdarg
+open Tacarg
 }
 
 TACTIC EXTEND lfind_tac
-| [ "lfind" ] -> { Lfind_main.lfind_tac false "coqsynth"}
+| [ "lfind" ] -> { Lfind_main.lfind_tac 0 "coqsynth" 6 12}
 END
 
 TACTIC EXTEND lfind_debug_tac
-| [ "lfind_debug" ] -> { Lfind_main.lfind_tac true "coqsynth"}
+| [ "lfind_debug" ] -> { Lfind_main.lfind_tac 1 "coqsynth" 6 12}
+END
+
+TACTIC EXTEND lfind_size_tac
+| [ "lfind_size" int(batch_size)] -> { Lfind_main.lfind_tac 0 "coqsynth" batch_size 12}
+END
+
+TACTIC EXTEND lfind_param_tac
+| [ "lfind_param" int(debug) string(synthesizer) int(batch_size) int(synth_timeout)] -> 
+    { Lfind_main.lfind_tac debug synthesizer batch_size synth_timeout}
 END
 
 VERNAC COMMAND EXTEND Success CLASSIFIED AS QUERY
