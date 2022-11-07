@@ -2,12 +2,12 @@ import os
 import json
 
 # This file includes functions is in charge of: 
-#   - ensuring that only coq .v files are in the folder
+#   - ensuring that only coq .v files are in the project folder
 #   - creating a _CoqProject for those files
 #   - creating the necessary make files
 #   - running make in that folder
 #   - running collect scripts to generate the lists of lemmas and helper lemmas
-#   - command lines below for Linux-based terminal (not sure how this works for Windows systems)
+#   - command lines below for Linux-based terminal (not sure if same commands will work for windws machines)
 
 def create_CoqProject(files,namespace):
     content = []

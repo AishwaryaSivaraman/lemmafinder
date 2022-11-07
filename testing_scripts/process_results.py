@@ -3,9 +3,9 @@ import csv
 
 # This file contains functions that are responsible for:
 #   - parsing the lfind_summary_log for each benchmark
-#   - write the results to a csv file for easy viewing
-#   - clean up the generated folders (if the flag is set)
-#       - returns project to original state (just coq files)
+#   - returns content to write into csv file
+#   - clean up the generated folders (based on if clean flag is set)
+#       - returns project to original state (just coq files) (clean_up_project function called from run.py)
 #       - clean -> removes all created files except for:
 #                   ~ the new file with lfind in it
 #                   ~ the lfind_summary_log.txt for each example
@@ -53,6 +53,7 @@ def write_to_csv(csv_file, content):
         writer.writerow(column_names)
         writer.writerows(content)
 
+# Called by run.py if clean flag is set to clean up original project and remove LFIND_FILES folder
 def clean_up_project(project_path,lfind_folder):
     remove = [f"rm -R {lfind_folder}"]
     for file in os.listdir(project_path):

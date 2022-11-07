@@ -5,8 +5,8 @@ import shutil
 #   - takes in list of the files that include helper lemmas that are used
 #   - create a new folder for each instance that a helper lemma is used
 #   - move all relevant files to that folder (i.e. _CoqProject, MakeFiles, etc.)
-#   - modify the coq .v file in the folder to include lfind at specified location
-#   - maintain a list of folders that have been created
+#   - modify the coq .v file in the folder to include lfind at specified location (based on testing parameters)
+#   - maintain a list of folders that have been created (all stored within a folder _LFIND_FILES for organization purposes)
 
 def write_content_to_file(file, content):
     f = open(file,"w")

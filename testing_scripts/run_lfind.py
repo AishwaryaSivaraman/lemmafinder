@@ -4,7 +4,7 @@ import subprocess
 # This file includes functions in charge of:
 #   - running make on each of the folders with lfind
 #   - keeping track of the folders that holds the results
-#   - returns a list of the lfind_summary_log.txt absolute paths for file
+#   - returns a list of the folders prodcued by lfind (starting with _lfind_...)
 
 def results_folder(lfind_folder):
     parent = os.path.dirname(lfind_folder)
@@ -41,6 +41,6 @@ def run_lfind(folders,log_dir):
         make_cmd = f"cd {folder} && make > {make_log_file}"
         result = subprocess.getoutput(make_cmd)
         error = check_for_errors(result,folder)
-        #os.system(make_cmd) # Sometimes the subprocess.getoutput throws errors, use this instead if so
+        # os.system(make_cmd) # Sometimes the subprocess.getoutput throws errors, use this instead if so
         results.append(results_folder(folder))
     return results
