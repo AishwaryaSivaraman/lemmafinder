@@ -39,8 +39,8 @@ def run_lfind(folders,log_dir):
         make_log_file = f"{log_dir}/lfind_benchmark_log_{folder_name}"
         os.system(f"touch {make_log_file}")
         make_cmd = f"cd {folder} && make > {make_log_file}"
-        result = subprocess.getoutput(make_cmd)
-        error = check_for_errors(result,folder)
-        # os.system(make_cmd) # Sometimes the subprocess.getoutput throws errors, use this instead if so
+        # result = subprocess.getoutput(make_cmd)
+        # error = check_for_errors(result,folder)
+        os.system(make_cmd) # Sometimes the subprocess.getoutput throws errors, use this instead if so
         results.append(results_folder(folder))
     return results

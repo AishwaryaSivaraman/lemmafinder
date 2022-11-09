@@ -13,7 +13,7 @@ from process_results import process_results, clean_up_project, write_to_csv
 def set_lfind_parameters():
     return {
         "debug" : 1, # 0 for off, 1 for on : int
-        "synthesizer" : "coqsynth", # name of synthesizer : string
+        "synthesizer" : "myth", # name of synthesizer : string
         "size" : 6, # max size of synthesized expressions : int
         "timeout" : 12 # timeout for synthesizer : int
     }
