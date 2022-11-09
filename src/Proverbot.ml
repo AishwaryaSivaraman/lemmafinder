@@ -37,8 +37,11 @@ let remove_current_search prelude =
   in ()
 
 let run prelude proof_name fname axiom_fname : bool =
-  let axiom_opt = if String.equal axiom_fname "" then "" else "--add-axioms=" ^ axiom_fname
-  in let report_folder = search prelude !Consts.prover_path fname axiom_opt proof_name
-  in let code = (output_code prelude proof_name report_folder)
-  in Log.debug(Consts.fmt "Code for conjecture %s is %b\n" proof_name code);
-  code
+  if !Opts.enable_proverbot then
+    let axiom_opt = if String.equal axiom_fname "" then "" else "--add-axioms=" ^ axiom_fname
+    in let report_folder = search prelude !Consts.prover_path fname axiom_opt proof_name
+    in let code = (output_code prelude proof_name report_folder)
+    in Log.debug(Consts.fmt "Code for conjecture %s is %b\n" proof_name code);
+    code
+  else
+    false
