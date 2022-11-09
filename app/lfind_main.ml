@@ -130,7 +130,7 @@ let lfind_tac (debug: int) (synthesizer: string) (synth_batch_size: int) (timeou
     if String.equal is_running "true" then Tacticals.New.tclZEROMSG (Pp.str ("LFind is already running! Aborting"))
     else
       begin
-        Utils.env_setup;
+        Utils.env_setup ();
         let contanins_forall, curr_state_lemma, typs, var_typs, vars, hyps = construct_state_as_lemma gl
         in print_endline curr_state_lemma;
         let p_ctxt, c_ctxt = construct_proof_context gl
@@ -188,13 +188,11 @@ let lfind_tac (debug: int) (synthesizer: string) (synth_batch_size: int) (timeou
         
         let coq_examples = Examples.dedup_examples (FileUtils.read_file example_file)
         in LogUtils.write_tbl_list_to_log coq_examples "Coq Examples";
-        let ml_examples = []
-        in if String.equal synthesizer "myth" then
+        let ml_examples = if String.equal synthesizer "myth" then
         (
-          let ml_examples = Examples.get_ml_examples coq_examples p_ctxt
-          in LogUtils.write_tbl_list_to_log ml_examples "ML Examples";
-        );
-        
+          Examples.get_ml_examples coq_examples p_ctxt
+        ) else coq_examples
+        in LogUtils.write_tbl_list_to_log ml_examples "ML Examples";
         let op = FileUtils.run_cmd "export is_lfind=true"
         in let abstraction = Abstract_NoDup.abstract
         in let generalized_terms, conjectures = abstraction p_ctxt c_ctxt
@@ -212,7 +210,7 @@ let lfind_tac (debug: int) (synthesizer: string) (synth_batch_size: int) (timeou
 
         (* get ml and coq version of the output of generalized terms *)
         let coq_examples, ml_examples = (ExampleUtils.evaluate_terms generalized_terms coq_examples ml_examples p_ctxt)
-        in
+        in 
         List.iter (fun c -> LogUtils.write_tbl_to_log c "COQE") coq_examples;
         
         let valid_conjectures, invalid_conjectures = (Valid.split_as_true_and_false conjectures p_ctxt)

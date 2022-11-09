@@ -219,7 +219,17 @@ let enumerate_conjectures conjecture curr_synth_term vars_for_synthesis p_ctxt m
   
   let vars_for_synthesis = List.append vars_for_synthesis [synthesis_op]
   in let conjecture_name = (conjecture.conjecture_name ^ string_of_int(Utils.next_val synth_count ())) in
-  let enumerated_exprs = CoqSynth.enumerate_expressions p_ctxt conjecture_name myth_examples var_types vars_for_synthesis output_type
+  let enumerated_exprs = if String.equal !Consts.synthesizer "myth" then
+    (
+      let enumerated_myth_exprs = Myth.enumerate_expressions p_ctxt conjecture_name  myth_examples var_types vars_for_synthesis true
+      in 
+      let start_i = 0 
+      in let end_i = start_i + Consts.myth_batch_size
+      in let top_k = Utils.slice_list start_i end_i enumerated_myth_exprs
+      in CoqofOcaml.get_coq_exprs top_k p_ctxt conjecture_name
+    ) else (
+      CoqSynth.enumerate_expressions p_ctxt conjecture_name myth_examples var_types vars_for_synthesis output_type
+    )
   in
   let counter = ref 0
   in let synthesized_conjectures = List.map (get_synthesis_conjecture is_equal_conj output_type curr_synth_term conjecture var_types (Utils.next_val counter))enumerated_exprs
@@ -254,7 +264,7 @@ let synthesize_lemmas
   in let input_examples = if String.equal synthesizer "myth" then ml_examples else coq_examples
   in Log.debug (Consts.fmt "Synth term is %s\n" (Sexp.string_of_sexpr curr_synth_term));
   let all_vars = List.append p_ctxt.vars conjecture.lfind_vars
-  in let coq_output_examples, ml_output_examples = (Evaluate.evaluate_coq_expr curr_synth_term input_examples p_ctxt all_vars conjecture.sigma (Some conjecture))
+  in let coq_output_examples, ml_output_examples = (Evaluate.evaluate_coq_expr curr_synth_term coq_examples p_ctxt all_vars conjecture.sigma (Some conjecture))
   in 
   let vars_for_synthesis = get_vars_for_synthesis conjecture curr_synth_term p_ctxt.vars all_vars
   in

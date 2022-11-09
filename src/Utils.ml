@@ -168,7 +168,7 @@ let cpu_count () =
     )
   with  _ -> 1
   
-let env_setup : unit =
+let env_setup () =
   let prover_path = get_env_var Consts.prover
   in
   if String.equal prover_path "" then raise (Invalid_Env "Prover path not set!")

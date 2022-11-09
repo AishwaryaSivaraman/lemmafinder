@@ -92,8 +92,7 @@ let evaluate_coq_expr expr examples p_ctxt all_vars
   *)
   let coq_output  = (List.rev (get_expr_vals output))
   in 
-  let ml_output = []
-  in if String.equal synthesizer "myth" then
+  let ml_output = if String.equal synthesizer "myth" then
   (
     let names, defs = get_defs_evaluated_examples coq_output
     in let ext_coqfile = generate_ml_extraction_file p_ctxt names defs
@@ -102,8 +101,6 @@ let evaluate_coq_expr expr examples p_ctxt all_vars
     in
     let ext_mlfile = Consts.fmt "%s/lfind_extraction.ml" p_ctxt.dir
     in let ext_output = List.rev (FileUtils.read_file ext_mlfile)
-    in let ml_output = List.rev (get_ml_evaluated_examples ext_output)
-    in Log.debug (Consts.fmt "length of examples %d\n" (List.length examples));
-    Log.debug (Consts.fmt "length of extracted examples %d\n" (List.length ml_output));
-  );
+    in List.rev (get_ml_evaluated_examples ext_output)
+  ) else [] in
   (coq_output, ml_output)

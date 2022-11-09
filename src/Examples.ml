@@ -58,6 +58,8 @@ let get_example_index examplestr index examples vars_for_synthesis lfind_sigma =
                     in 
                     if ind == ((List.length vars_for_synthesis)-1) then
                     (examplestr ^ op, ind+1)
+                    else if String.equal !Consts.synthesizer "myth" then
+                    (examplestr ^ op ^ " => ", ind+1)
                     else
                     ((examplestr ^ op ^ " , "), ind+1)
                  ) ("", 0) vars_for_synthesis
@@ -71,5 +73,7 @@ let gen_synthesis_examples (examples:(string, string) Hashtbl.t list)
              fun index op ->
                   let input_str,_ = get_example_index "" index examples vars_for_synthesis lfind_sigma
                   in 
-                  input_str ^ "=" ^ op ^ ";"
+                  if String.equal !Consts.synthesizer "myth"
+                  then (if Int.equal 0 index then input_str ^ " => " ^ op else input_str ^ " => " ^ op ^ ";")
+                  else input_str ^ "=" ^ op ^ ";"
             ) output_examples
