@@ -4,8 +4,9 @@ open Goptions
 let enable_quickchick = ref true
 let enable_proverbot = ref true
 let synthesizer = ref "coqsynth"
-let synth_batch_size = ref 6
-let timeout = ref 12
+let synth_batch_size = ref "6"
+let timeout = ref "12"
+
 (* Can add any other parameters that you want the user to be able to set here. *)
 
 (* Setting up option for enabling proverbot 
@@ -37,8 +38,8 @@ let _ =
   in declare_bool_option gdopt
 
 (* Setting up option for choosing the synthesizer 
-   To set: Set Lfind Synthesizer {name of synthesizer}.
-   To default: Unset Lfind Synthesizer.*)
+   To set: Set Lfind Synthesizer {name of synthesizer}. 
+   Defaults to coqsynth*)
 let _ = 
   let gdopt = 
     {
@@ -48,11 +49,11 @@ let _ =
       optread=(fun () -> !synthesizer);
       optwrite=(fun synth -> synthesizer := synth)
     }
-  in declare_stringopt_option gdopt
+  in declare_string_option gdopt
 
 (* Setting up option for the number of terms synthesized (batch size) 
    To set: Set Lfind Batch-Size {number of terms (k)}.
-   To default: Unset Lfind Batch-Size.*)
+   Default to 6. *)
 let _ = 
   let gdopt = 
     {
@@ -62,11 +63,11 @@ let _ =
       optread=(fun () -> !synth_batch_size);
       optwrite=(fun k -> synth_batch_size := k)
     }
-  in declare_int_option gdopt
+  in declare_string_option gdopt
 
 (* Setting up option for the number of terms synthesized (batch size) 
    To set: Set Lfind Timeout {timeout (t)}.
-   To default: Unset Lfind Timeout.*)
+   Default to 12. *)
 let _ = 
   let gdopt = 
     {
@@ -76,4 +77,4 @@ let _ =
       optread=(fun () -> !timeout);
       optwrite=(fun t -> timeout := t)
     }
-  in declare_int_option gdopt
+  in declare_string_option gdopt

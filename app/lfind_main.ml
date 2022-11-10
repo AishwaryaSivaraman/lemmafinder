@@ -116,15 +116,15 @@ let construct_state_as_lemma gl =
     )
   
   (* debug = 0 if off, 1 if on;  synthesizer = synthesizer used; synth_batch_size = max size of synthesized expr; timeout = synthesizer timeout*)
-let lfind_tac (debug: int) (synthesizer: string) (synth_batch_size: int) (timeout: int): unit Proofview.tactic =
+let lfind_tac (debug: bool) : unit Proofview.tactic =
   Consts.start_time := int_of_float(Unix.time ());
-  Log.is_debug := debug = 1;
+  Log.is_debug := debug;
+  Consts.synth_batch_size := int_of_string !Opts.synth_batch_size;
+  Consts.synthesizer := !Opts.synthesizer;
+  Consts.synthesizer_timeout := int_of_string !Opts.timeout;
   Proofview.Goal.enter
   begin fun gl ->
-    Consts.myth_batch_size := synth_batch_size;
-    Consts.synthesizer := synthesizer;
-    Consts.synthesizer_timeout := string_of_int timeout;
-    print_endline("The synthesizer used is " ^ !Consts.synthesizer ^ " with myth batch size " ^ string_of_int !Consts.myth_batch_size);
+    print_endline("The synthesizer used is " ^ !Consts.synthesizer ^ " with myth batch size " ^ string_of_int !Consts.synth_batch_size);
     let is_running = Utils.get_env_var "is_lfind"
     in 
     if String.equal is_running "true" then Tacticals.New.tclZEROMSG (Pp.str ("LFind is already running! Aborting"))
@@ -143,7 +143,7 @@ let lfind_tac (debug: int) (synthesizer: string) (synth_batch_size: int) (timeou
         let p_ctxt = {p_ctxt with modules = module_names; types = typs; hypotheses = hyps; all_vars = vars}
         (* If myth is chosen as the synthesizer, generate .ml file and check if it is parsable by myth *)
         in
-        if String.equal synthesizer "myth" then
+        if String.equal !Consts.synthesizer "myth" then
         (
           let ml_file = Consts.fmt "%s/%s_lfind_orig.ml" p_ctxt.dir p_ctxt.fname
           in 
@@ -188,7 +188,7 @@ let lfind_tac (debug: int) (synthesizer: string) (synth_batch_size: int) (timeou
         
         let coq_examples = Examples.dedup_examples (FileUtils.read_file example_file)
         in LogUtils.write_tbl_list_to_log coq_examples "Coq Examples";
-        let ml_examples = if String.equal synthesizer "myth" then
+        let ml_examples = if String.equal !Consts.synthesizer "myth" then
         (
           Examples.get_ml_examples coq_examples p_ctxt
         ) else coq_examples

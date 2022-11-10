@@ -48,14 +48,14 @@ let get_myth_exprs myth_output =
 let run synth_fname p_ctxt conjecture_name enumerate=
   let myth_path = !Consts.synthesizer_path
   in let myth_output_path = p_ctxt.dir ^ "/" ^ p_ctxt.fname ^ conjecture_name ^ "synthesis.txt"
-  in let timeout_cmd = Consts.fmt "timeout  %s" !Consts.synthesizer_timeout
+  in let timeout_cmd = Consts.fmt "timeout  %d" !Consts.synthesizer_timeout
   in let myth_cmd = Consts.fmt  "%s %s %s > %s" myth_path enumerate synth_fname myth_output_path
   in let run_myth = run_cmd (Consts.fmt "%s %s" timeout_cmd  myth_cmd)
   in get_myth_exprs (List.rev (read_file myth_output_path))
 
 let run_parse p_ctxt fname=
   let myth_path = !Consts.synthesizer_path
-  in let timeout_cmd = Consts.fmt "timeout  %s" !Consts.synthesizer_timeout
+  in let timeout_cmd = Consts.fmt "timeout  %d" !Consts.synthesizer_timeout
   in let parse_file = Consts.fmt "%s/%s.ml" p_ctxt.dir fname
   in let myth_cmd = Consts.fmt  "%s -parse %s" myth_path parse_file
   in
