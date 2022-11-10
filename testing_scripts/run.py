@@ -10,13 +10,13 @@ from run_lfind import run_lfind
 from process_results import process_results, clean_up_project, write_to_csv
 
 # These are the defaul values, can be modified by user/tester to represent how they want lfind ran
-def set_lfind_parameters():
-    return {
-        "debug" : 1, # 0 for off, 1 for on : int
-        "synthesizer" : "myth", # name of synthesizer : string
-        "size" : 6, # max size of synthesized expressions : int
-        "timeout" : 12 # timeout for synthesizer : int
-    }
+def set_lfind_parameters(args):
+    quickchick = "Unset Lfind Quickchick.\n" if args.no_quickchick else ""
+    proverbot = "Unset Lfind Proverbot.\n" if args.no_proverbot else ""
+    synth_size = f"Set Lfind BatchSize \"{args.synth_batch_size}\".\n" if args.synth_batch_size != 6 else ""
+    synthesizer = f"Set Lfind Synthesizer \"{args.synthesizer}\".\n" if args.synthesizer is not "coqsynth" else ""
+    timeout = f"Set Lfind Batch-Size \"{args.synth_timeout}\".\n" if args.synth_timeout != 12 else ""
+    return f"{quickchick}{proverbot}{synthesizer}{synth_size}{timeout}"
 
 def parse_arguments() -> Tuple[argparse.Namespace, argparse.ArgumentParser]:
     parser = argparse.ArgumentParser(
@@ -28,15 +28,20 @@ def parse_arguments() -> Tuple[argparse.Namespace, argparse.ArgumentParser]:
     parser.add_argument('--project', default=None)
     parser.add_argument('--benchmarks', default=None)
     parser.add_argument('--clean', default=False, action='store_true')
+    parser.add_argument('--no_quickchick', default=False, action='store_true')
+    parser.add_argument('--no_proverbot', default=False, action='store_true')
+    parser.add_argument('--synth_batch_size', default=6, type=int)
+    parser.add_argument('--synth_timeout', default=12, type=int)
+    parser.add_argument('--synthesizer', default="coqsynth")
     return parser.parse_args()
 
-def run_on_project(project_path,log_directory,cwd):
+def run_on_project(project_path,log_directory,cwd,parameters):
     # Run all pre-processing
     helper_lemmas, all_lemmas = prepare(project_path,cwd)
     if helper_lemmas == None:
         return None, None, None, None
     # Create folders for each of the examples
-    lfind_folders, lfind_folder = invoke_lfind(helper_lemmas,project_path,lfind_parameters=set_lfind_parameters())
+    lfind_folders, lfind_folder = invoke_lfind(helper_lemmas,project_path,lfind_parameters=parameters)
     # Set log directory if not provided
     log_folder = log_directory if log_directory is not None else os.path.join(os.path.dirname(lfind_folder),"RESULTS")
     if os.path.isdir(log_folder) == False:
@@ -56,6 +61,7 @@ def main() -> None:
     result_folder = args.result_folder
     benchmarks = [item for item in args.benchmarks.split(',')] if args.benchmarks is not None else []
     clean = args.clean
+    parameters = set_lfind_parameters(args)
 
     if project_input is not None:
         # Make sure the path is absolute and exists
@@ -65,7 +71,7 @@ def main() -> None:
             print("Path provided doesn't exist. Try again.")
             return None
         # Run for the project and get the result folders
-        result, result_folder, lemmas, lfind_folder = run_on_project(project_path=project_path,log_directory=result_folder,cwd=cwd)
+        result, result_folder, lemmas, lfind_folder = run_on_project(project_path=project_path,log_directory=result_folder,cwd=cwd, parameters=parameters)
         # Process the results
         if result is not [] and result is not None:
             csv_content = process_results(result,result_folder,lemmas,clean)
@@ -90,7 +96,7 @@ def main() -> None:
             os.mkdir(directory)
             shutil.copy(file_path,directory)
             # We can then pass this folder into the run_on_project function
-            result, result_folder, lemmas, lfind_folder = run_on_project(project_path=directory,log_directory=result_folder,cwd=cwd)
+            result, result_folder, lemmas, lfind_folder = run_on_project(project_path=directory,log_directory=result_folder,cwd=cwd,parameters=parameters)
             # Process the results
             if result is not [] and result is not None:
                 csv_content = process_results(result,result_folder,lemmas,clean)
@@ -116,7 +122,7 @@ def main() -> None:
             # Make sure that bench folder exists
             bench_path = os.path.join(parent_path,bench)  
             if os.path.isdir(bench_path):
-                result, result_folder, lemmas, lfind_folder = run_on_project(project_path=bench_path,log_directory=log_folder,cwd=cwd)
+                result, result_folder, lemmas, lfind_folder = run_on_project(project_path=bench_path,log_directory=log_folder,cwd=cwd,parameters=parameters)
                 if result is not [] and result is not None:
                     p = process_results(result,result_folder,lemmas,clean)
                     csv_content.append(p)

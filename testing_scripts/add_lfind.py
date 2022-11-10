@@ -14,12 +14,6 @@ def write_content_to_file(file, content):
 
 # This function should return the paths to the folders that have lfind invoked for a given file
 def add_lfind(file,usages,path,parameters):
-    # Set the parameters for how you want lfind ran
-    debug = parameters["debug"] # on = 1, 0 = off
-    synth = parameters["synthesizer"] # sythesizer used
-    size = parameters["size"] # max size of synthesized expressions
-    timeout = parameters["timeout"] # timeout for synthesizer
-
     folders = {}
     file_obj = open(os.path.join(path,file))
     content = file_obj.readlines()
@@ -29,6 +23,7 @@ def add_lfind(file,usages,path,parameters):
         theorem = use[0].replace("'","")
         # Start putting lfind content into file (i.e. the contents for the file)
         lfind_content = ["Load LFindLoad.\nFrom lfind Require Import LFind.\nUnset Printing Notations.\nSet Printing Implicit.\n"]
+        lfind_content.append(parameters)
         lfind_content.append("\n")
         lfind_content.extend(content[:line])
         # At the line invoked, split up the tactics to figure out where lfind should be invoked
@@ -42,7 +37,7 @@ def add_lfind(file,usages,path,parameters):
                 if '*' in first_index_val or '-' in first_index_val or '+' in first_index_val or '{' in first_index_val:
                     lfind_tactic = first_index_val
                 # Here we will add the specific parameters to lfind in order to run a specific way
-                new_line.append(lfind_tactic + f" lfind_param {debug} \"{synth}\" {size} {timeout}.")
+                new_line.append(lfind_tactic + f" lfind.")
                 break
             else:
                 new_line.append(f"{command}")

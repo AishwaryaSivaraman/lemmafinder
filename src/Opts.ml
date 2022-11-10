@@ -58,7 +58,7 @@ let _ =
   let gdopt = 
     {
       optdepr=false;
-      optkey=["Lfind";"Batch-Size"];
+      optkey=["Lfind";"BatchSize"];
       optname="Choose batch-size";
       optread=(fun () -> !synth_batch_size);
       optwrite=(fun k -> synth_batch_size := k)
