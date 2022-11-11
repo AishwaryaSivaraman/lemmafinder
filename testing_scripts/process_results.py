@@ -80,7 +80,11 @@ def clean_up_lfind(result_folders,log_directory,clean):
             # Move the lfind file and results file to folder
             os.system(f"mv -f {lfind_file} {new_folder}")
             try:
-                os.system(f"mv -f {summary} {new_folder}")
+                if os.path.exists(summary):
+                    os.system(f"mv -f {summary} {new_folder}")
+                else:
+                    run_log = os.path.join(log_directory,f"lfind_benchmark_{example}")
+                    print(f"Summary log for {lfind_file} not generated. Check {run_log} to see investigate why.")
             except:
                 print(f"Log not generated for {lfind_file}")
             # Delete the produced folders if cleaning
