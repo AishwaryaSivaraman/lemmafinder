@@ -15,8 +15,6 @@ from helper import *
 from statistics import mean
 
 
-lfind_decl = "Load LFindLoad.\nFrom lfind Require Import LFind.\nUnset Printing Notations.\nSet Printing Implicit.\n"
-
 def parse_arguments() -> Tuple[argparse.Namespace, argparse.ArgumentParser]:
     parser = argparse.ArgumentParser(
         description=
@@ -25,6 +23,10 @@ def parse_arguments() -> Tuple[argparse.Namespace, argparse.ArgumentParser]:
     parser.add_argument('--logical_directory', default="test")
     parser.add_argument('--log_directory', default="./")
     parser.add_argument('--debug', default=False, action='store_true')
+    parser.add_argument('--no-resume', default=False, action='store_true')
+    parser.add_argument('--no-quickchick', default=False, action='store_true')
+    parser.add_argument('--no-proverbot', default=False, action='store_true')
+    parser.add_argument('--synthesizer', default="coqsynth", type=str)
     parser.add_argument('--example_dir', default=None)
     parser.add_argument('--getting_started', default=False, action='store_true')
     parser.add_argument('--small', default=False, action='store_true')
@@ -83,7 +85,7 @@ def get_stuck_state(fname):
         print(e)
     return ""
 
-def run(source_folder, helper_lemma_dict, log_directory, all_lemmas_from_file, example_dir, debug, run_till_cat_1):
+def run(source_folder, helper_lemma_dict, log_directory, all_lemmas_from_file, example_dir, debug, run_till_cat_1, no_resume, synthesizer, lfind_decl):
     counter = 0
     all_lemmas = 0
     category_1_count = 0
@@ -118,7 +120,7 @@ def run(source_folder, helper_lemma_dict, log_directory, all_lemmas_from_file, e
                 
                 lfind_summary_log = os.path.join(stuck_folder, "lfind_summary_log.txt")
                 # is_run_make = True
-                if os.path.isdir(stuck_folder) and os.path.isfile(lfind_summary_log):
+                if not no_resume and os.path.isdir(stuck_folder) and os.path.isfile(lfind_summary_log):
                     print("found lfind summary");
                     continue
                     is_run_make = False
@@ -138,11 +140,11 @@ def run(source_folder, helper_lemma_dict, log_directory, all_lemmas_from_file, e
                         lfind_tactic = first_index_val
                     if lemma_name in c_line_content[i]:
                         if debug:
-                            c_modified_content.append(lfind_tactic + " lfind_debug")
+                            c_modified_content.append(lfind_tactic + f" lfind_debug_{synthesizer}")
                         elif run_till_cat_1:
                             c_modified_content.append(lfind_tactic + " lfind_cat1")
                         else:
-                            c_modified_content.append(lfind_tactic + " lfind")
+                            c_modified_content.append(lfind_tactic + f" lfind_{synthesizer}")
                     else:
                         c_modified_content.append(c_line_content[i])
                 lfind_content.append(". ".join(c_modified_content))
@@ -419,9 +421,22 @@ def compare_size_of_sketch_synth(all_logs, benchmarks, log_dir):
     print(f"Median Size of myth term is {statistics.median(myth_size)}")
     print(f"Average percentage of synthesized term {statistics.mean(ratio_size_of_synth_full)}")
 
+def get_lfind_decl(args):
+    lfind_decl = "Load LFindLoad.\nFrom lfind Require Import LFind.\nUnset Printing Notations.\nSet Printing Implicit.\n"
+    if args.no_quickchick:
+        lfind_decl += "Unset Lfind QuickChick.\n"
+    if args.no_proverbot:
+        lfind_decl += "Unset Lfind Proverbot.\n"
+    return lfind_decl
+
 def main() -> None:
     args, parser = parse_arguments()
+    if args.synthesizer not in ["coqsynth", "myth"]:
+        print("Synthesizer must be either coqsynth or myth")
+        exit(1)
+    print(f"Synthesizer: {args.synthesizer}")
     benchmark_all = [item for item in args.bench.split(',')]
+    lfind_decl = get_lfind_decl(args)
     
     if args.getting_started:
         # run LFIND on the given repo
@@ -429,7 +444,7 @@ def main() -> None:
         all_lemmas_from_file = get_all_lemmas(args.prelude)
         os.makedirs(args.log_directory, exist_ok=True)
         run_till_cat1 = False
-        run(args.prelude, helper_lemma_dict, args.log_directory, all_lemmas_from_file, args.example_dir, args.debug, run_till_cat1)
+        run(args.prelude, helper_lemma_dict, args.log_directory, all_lemmas_from_file, args.example_dir, args.debug, run_till_cat1, args.no_resume, args.synthesizer, lfind_decl)
         print("Completed running on the given dataset, processing logs now..")
         # process log files from the repo
         log_objs, total_times, time_to_cat_1s, total_lemmas, total_afterquickchick, total_after_other_filters= run_process_logs(args.log_directory, helper_lemma_dict, args.project, args.prelude)
@@ -468,7 +483,7 @@ def main() -> None:
                 run_till_cat1 = False
             else:
                 run_till_cat1 = False
-            run(base_dir, helper_lemma_dict, log_dir, all_lemmas_from_file, example_dir, args.debug, run_till_cat1)
+            run(base_dir, helper_lemma_dict, log_dir, all_lemmas_from_file, example_dir, args.debug, run_till_cat1, args.no_resume, args.synthesizer, lfind_decl)
             log_objs, total_times, time_to_cat_1s, total_lemmas, total_afterquickchick, total_after_other_filters = run_process_logs(log_dir, helper_lemma_dict, args.project,base_dir)
             all_logs[bench]  = log_objs
             all_total_times.extend(total_times)
