@@ -4,7 +4,9 @@ open ExtractToML
 
 let generate_eval_file p_ctxt eval_str : string =
   let lfind_file = p_ctxt.dir ^ "/lfind_eval.v"
-  in let module_imports = List.fold_left (fun acc m -> acc ^ (m ^"\n")) "" p_ctxt.modules
+  in 
+  Log.debug (Consts.fmt "lfind_eval file: %s" eval_str);
+  let module_imports = List.fold_left (fun acc m -> acc ^ (m ^"\n")) "" p_ctxt.modules
   in let content = Consts.fmt "%s%s\nFrom %s Require Import %s.\n%s\n%s\n%s"
                    Consts.lfind_declare_module
                    p_ctxt.declarations
@@ -50,31 +52,13 @@ let get_evaluate_str expr vars examples lfind_sigma (var_typs:(string, string) H
                                         in acc ^ get_compute_string input
                     ) eval_def examples
 
-let get_expr_vals output =
-  let val_accm = ref ""
-  in List.fold_left (fun acc op -> 
-                          if Utils.contains op ":"
-                            then 
-                            (
-                                let updated_acc = ("(" ^ !val_accm ^ ")")::acc
-                                in val_accm := "";
-                                updated_acc
-                            )
-                          else 
-                            (
-                              if Utils.contains op "="
-                              then 
-                              (
-                                val_accm := List.hd (List.rev (String.split_on_char '=' op));
-                                acc
-                              )
-                              else
-                              (
-                                val_accm := !val_accm ^ op;
-                                acc
-                              )
-                            )
-                 ) [] output
+let get_expr_vals eval_output =
+  let python = "python3 "
+  in let script = Consts.fmt "%sbenchmark/get_expr_vals.py"
+                  !Consts.lfind_path
+  in let cmd = Consts.fmt "%s %s --input=%s" python script (String.concat "\n" eval_output)
+  in Log.debug (Consts.fmt "get_expr_vals cmd: %s" cmd); let run_op = FileUtils.run_cmd cmd
+  in run_op
 
 let evaluate_coq_expr expr examples p_ctxt all_vars 
 (lfind_sigma:(string, Sexp.t list * string) Hashtbl.t) conj
@@ -85,13 +69,13 @@ let evaluate_coq_expr expr examples p_ctxt all_vars
                   | Some c -> ExprUtils.get_type_vars c all_vars
   in let evalstr = get_evaluate_str expr all_vars examples lfind_sigma var_typs
   in let efile = generate_eval_file p_ctxt evalstr
-  in let output = run_eval p_ctxt.dir efile p_ctxt.namespace
-  in
+  in Log.debug "after generate_eval_file"; let output = run_eval p_ctxt.dir efile p_ctxt.namespace
+  in Log.debug "after run_eval";
   (* TODO: Need to check here why the two outputs for COQ and ML 
      have different order. Hacky solution now!
   *)
   let coq_output  = (List.rev (get_expr_vals output))
-  in 
+  in Log.debug (Consts.fmt "coq_output: %s" (String.concat " " coq_output));
   let ml_output = if String.equal synthesizer "myth" then
   (
     let names, defs = get_defs_evaluated_examples coq_output
@@ -103,4 +87,5 @@ let evaluate_coq_expr expr examples p_ctxt all_vars
     in let ext_output = List.rev (FileUtils.read_file ext_mlfile)
     in List.rev (get_ml_evaluated_examples ext_output)
   ) else [] in
+  (* Log.debug (Consts.fmt "ml_output: %s" (String.concat " " ml_output)); *)
   (coq_output, ml_output)
