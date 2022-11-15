@@ -36,7 +36,11 @@ How to use for different test cases (benchmark testing):
     ~ LIST OF FOLDERS WITH COQ FILES (for testing purposes (without lfind included))
         $ cd {lemmafinder directory}
         $ python3 testing_scripts/run.py --parent={absolute path to directory that holds benchmarks/directories} --benchmarks={list of folder ex. ="clam,lia,fulladder"}
-
+    ~ RERUNNING EXAMPLE (this lets you continue running a project that you had previously started to run and reuse logs from it)
+        -> Original run cannot be ran with --clean flag because these needed files will be deleted
+        -> This command can be run with --clean flag
+        $ cd {lemmafinder directory}
+        $ python3 testing_scripts/run.py --lfind_files={absolute path to directory previously created ending with _LFIND_FILES} --result_folder={absolute path to log folder} --rerun
 Optional Flags:
     --result_folder={folder to store results}
         ~ The default folder is the same location as the project (file or project) or parent directory (benchmarks) and has the name "RESULTS"

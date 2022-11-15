@@ -1,5 +1,6 @@
 import os
 import csv
+import shutil
 
 # This file contains functions that are responsible for:
 #   - parsing the lfind_summary_log for each benchmark
@@ -11,7 +12,7 @@ import csv
 #                   ~ the lfind_summary_log.txt for each example
 #                   ~ the log directory folder
 
-def parse_contents(contents,all_lemmas,summary_path):
+def parse_contents(contents,summary_path):
     result = {}
     result["Success"] = False
     result["RunTime"] = -1
@@ -78,10 +79,15 @@ def clean_up_lfind(result_folders,log_directory,clean):
             if os.path.exists(new_folder) == False:
                 os.mkdir(new_folder)
             # Move the lfind file and results file to folder
-            os.system(f"mv -f {lfind_file} {new_folder}")
+            #os.system(f"mv -f {lfind_file} {new_folder}")
+            try:
+                shutil.copy(src=lfind_file,dst=new_folder)
+            except:
+                print(f"Cannot find the coq file {lfind_file} with lfind in it.")
             try:
                 if os.path.exists(summary):
-                    os.system(f"mv -f {summary} {new_folder}")
+                    #os.system(f"mv -f {summary} {new_folder}")
+                    shutil.copy(src=summary,dst=new_folder)
                 else:
                     run_log = os.path.join(log_directory,f"lfind_benchmark_{example}")
                     print(f"Summary log for {lfind_file} not generated. Check {run_log} to see investigate why.")
@@ -93,7 +99,7 @@ def clean_up_lfind(result_folders,log_directory,clean):
                 og_lfind_folder = os.path.join(parent,example)
                 os.system(f"rm -R {og_lfind_folder}")
 
-def process_results(result_folders,log_directory,all_lemmas,clean):
+def process_results(result_folders,log_directory,clean):
     content_for_csv = []
     for file in result_folders:
         for folder in result_folders[file]:
@@ -116,7 +122,7 @@ def process_results(result_folders,log_directory,all_lemmas,clean):
                 except:
                     print("---- Log not generated properly.")
             if contents is not None:
-                content_results = parse_contents(contents,all_lemmas,summary)
+                content_results = parse_contents(contents,summary)
                 content_for_csv.append([
                     file,
                     example, 
