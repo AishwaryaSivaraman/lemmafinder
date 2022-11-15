@@ -83,23 +83,12 @@ def resume_run_on_project(lfind_files,log_directory):
         os.system(cmd)
     # Run the other folders, if their lfind folder does not exist
     to_run = []
-    def get_file_name(folder):
-        sections = f"{folder}".split("_")
-        return f"{sections[1]}.v"
     for folder in not_result:
         if folder not in examples:
             to_run.append(os.path.join(lfind_files,folder))
     result_folders.extend(run_lfind(folders=to_run,log_dir=log_directory))
-    # Prepare results to be returned
-    results = {}
-    for folder in result_folders:
-        f = os.path.basename(folder)
-        file = get_file_name(f[len("_lfind_"):])
-        if results.keys() is None or file not in results.keys():
-            results[file] = [folder]
-        else:
-            results[file].append(folder)
-    return results
+    # Return result folder
+    return result_folders
     
 def main() -> None:
     args = parse_arguments()
@@ -114,19 +103,18 @@ def main() -> None:
     parameters = set_lfind_parameters(args)
 
     if args.rerun:
+        # This option processes the logs differently (because we don't maintain access to which file had created it)
+        # This will be dependent on how we want to log outputs and what information we want from the lfind_summary_log.txt
+        # Also the results will not be processed in the same way... again this can be changed when it is needed
         if result_folder is None or lfind_files is None or os.path.exists(lfind_files) == False:
             print("In order to rerun, you need to have a result folder and you need to pass in the project LFIND_FILES folder.")
             return None
         # Run for the project and get the result folders
         result = resume_run_on_project(lfind_files=lfind_files,log_directory=result_folder)
-        # Process the results
-        if result is not [] and result is not None:
-            csv_content = process_results(result,result_folder,clean)
-            write_to_csv(os.path.join(result_folder,"summary_log.csv"),csv_content)
-            if clean:
-                clean_up_project(lfind_files[:len("_LFIND_FILES")], lfind_files)
-        else:
-            print(f"No results for {lfind_files}")
+        # Now there should be a bunch of lfind_summary_log.txt files in the folders with no processing done
+        print("The result folder will not be processed/organized the same as non-rerun options. And, --clean flag is ineffecitve.")
+        print("The folders below hold the results from running lfind on the examples:")
+        print(result)
     elif project_input is not None:
         # Make sure the path is absolute and exists
         try:
