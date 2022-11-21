@@ -224,7 +224,7 @@ let enumerate_conjectures conjecture curr_synth_term vars_for_synthesis p_ctxt m
       let enumerated_myth_exprs = Myth.enumerate_expressions p_ctxt conjecture_name  myth_examples var_types vars_for_synthesis true
       in 
       let start_i = 0 
-      in let end_i = start_i + Consts.myth_batch_size
+      in let end_i = start_i + !Consts.synth_batch_size
       in let top_k = Utils.slice_list start_i end_i enumerated_myth_exprs
       in CoqofOcaml.get_coq_exprs top_k p_ctxt conjecture_name
     ) else (

@@ -3,7 +3,7 @@ open FileUtils
 
 let run dir fname op_fname =
   let rewrite_path = !Consts.rewriter_path
-  in let timeout_cmd = Consts.fmt "timeout  %s" Consts.synthesizer_timeout
+  in let timeout_cmd = Consts.fmt "timeout  %d" !Consts.synthesizer_timeout
   in let rewrite_command = Consts.fmt  "%s %s %s %s" rewrite_path dir fname op_fname
   in Feedback.msg_info (Pp.str rewrite_command);
   let run_rewrite = run_cmd (Consts.fmt "%s %s" timeout_cmd  rewrite_command)
