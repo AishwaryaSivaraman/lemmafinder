@@ -12,7 +12,8 @@ def write_content_to_file(file, content):
     f = open(file,"w")
     f.write("".join(content))
 
-# This function should return the paths to the folders that have lfind invoked for a given file
+# This function should return the paths to the folders that have lfind invoked for a given file, as well as the corresponding
+# contents of those files.
 def add_lfind(file,usages,path,parameters):
     folders = {}
     file_obj = open(os.path.join(path,file))

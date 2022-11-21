@@ -36,7 +36,6 @@ let run (fname: string) (namespace: string) (dir: string)
   else
     (false, [])
 
-
 let remove_files dir =
   let cmd = "rm -rf " ^ dir ^ "/lfindconj*"
   in let cmd_op = run_cmd cmd

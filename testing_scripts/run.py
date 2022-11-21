@@ -17,7 +17,8 @@ def set_lfind_parameters(args):
     # Here we just check if it's myth or not because we only consider one other synthesizer
     synthesizer = f"Set Lfind Synthesizer \"{args.synthesizer}\".\n" if args.synthesizer == "myth" else ""
     timeout = f"Set Lfind Batch-Size \"{args.synth_timeout}\".\n" if args.synth_timeout != 12 else ""
-    return f"{quickchick}{proverbot}{synthesizer}{synth_size}{timeout}"
+    debug = "Set Lfind Debugging.\n" if args.debug else ""
+    return f"{quickchick}{proverbot}{synthesizer}{synth_size}{timeout}{debug}"
 
 def parse_arguments() -> Tuple[argparse.Namespace, argparse.ArgumentParser]:
     parser = argparse.ArgumentParser(
@@ -36,6 +37,7 @@ def parse_arguments() -> Tuple[argparse.Namespace, argparse.ArgumentParser]:
     parser.add_argument('--synthesizer', default="coqsynth")
     parser.add_argument('--rerun', default=False, action='store_true')
     parser.add_argument('--lfind_files', default=None)
+    parser.add_argument('--debug', default=False, action='store_true')
     return parser.parse_args()
 
 def run_on_project(project_path,log_directory,cwd,parameters):

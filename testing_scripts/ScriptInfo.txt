@@ -7,13 +7,15 @@ To use script similar to older script:
     1) You need to have a folder or collection of folders that only include coq files (not _CoqProject or Makefiles or anything else)
     2) For having a single folder, run:
         $ cd {lemmafinder directory}
-        $ python3 testing_scripts/run.py --project={absolute path to directory with files} --result_folder={path to result/log folder}
+        $ python3 testing_scripts/run.py --project={absolute path to directory with files} --result_folder={absolute path to result/log folder}
     3) For having a collection of folders, run:
         $ cd {lemmafinder directory}
         $ python3 testing_scripts/run.py --parent={absolute path to directory that holds benchmarks/directories} 
             --benchmarks={list of folder ex. ="clam,lia,fulladder"} --result_folder={path to result/log folder}
 <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-To run with while making changes to lfind, there are two options:
+As the developers, we will want to make changes to the lfind tactic (i.e. fix bugs and add features); when doing this, we'll want to be able to run the tactic
+to see how it behaves. If you want to do this while using the script, there are two ways to do that. Before doing both of them you would want to make your changes
+to the lfind source code and then rebuild the project. Then to run with these changes to lfind, there are two options:
  1) More similar to the original script, just run "make" within the folder that has lfind invoked in the coq file and delete the _lfind_ folder that was originally
     created. This will just remake the _lfind_ folder for that example.
  2) You can run the script with the --clean tag. This will result in having a result folder that includes the old lfind_summary_logs. You can either rename your result 
