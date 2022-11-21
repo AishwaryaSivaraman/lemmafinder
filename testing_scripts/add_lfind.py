@@ -14,7 +14,7 @@ def write_content_to_file(file, content):
 
 # This function should return the paths to the folders that have lfind invoked for a given file, as well as the corresponding
 # contents of those files.
-def add_lfind(file,usages,path,parameters):
+def add_lfind(file,usages,path,parameters,debug):
     folders = {}
     file_obj = open(os.path.join(path,file))
     content = file_obj.readlines()
@@ -38,7 +38,10 @@ def add_lfind(file,usages,path,parameters):
                 if '*' in first_index_val or '-' in first_index_val or '+' in first_index_val or '{' in first_index_val:
                     lfind_tactic = first_index_val
                 # Here we will add the specific parameters to lfind in order to run a specific way
-                new_line.append(lfind_tactic + f" lfind.")
+                if debug:
+                    new_line.append(lfind_tactic + f" lfind_debug.")
+                else:
+                    new_line.append(lfind_tactic + f" lfind.")
                 break
             else:
                 new_line.append(f"{command}")
@@ -83,7 +86,7 @@ def create_lfind_directories(file, usages, project_path,lfind_folder):
             folders.append(new_folder)
     return folders
         
-def invoke_lfind(helper_lemmas,project_path,lfind_parameters):
+def invoke_lfind(helper_lemmas,project_path,lfind_parameters,debug):
     contents = {}
     folders = {}
     parent = os.path.dirname(project_path)
@@ -94,7 +97,7 @@ def invoke_lfind(helper_lemmas,project_path,lfind_parameters):
     os.mkdir(lfind_folder)
     # Add lfind to each of the files where a helper lemma is used
     for file in helper_lemmas:
-        contents[file] = add_lfind(file,helper_lemmas[file],project_path,lfind_parameters)
+        contents[file] = add_lfind(file,helper_lemmas[file],project_path,lfind_parameters,debug)
     # Create and fill folders for each instance that a counter example is use
     for file in contents:
         folders[file] = create_lfind_directories(file,contents[file],project_path,lfind_folder)

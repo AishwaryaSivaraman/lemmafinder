@@ -17,8 +17,7 @@ def set_lfind_parameters(args):
     # Here we just check if it's myth or not because we only consider one other synthesizer
     synthesizer = f"Set Lfind Synthesizer \"{args.synthesizer}\".\n" if args.synthesizer == "myth" else ""
     timeout = f"Set Lfind Batch-Size \"{args.synth_timeout}\".\n" if args.synth_timeout != 12 else ""
-    debug = "Set Lfind Debugging.\n" if args.debug else ""
-    return f"{quickchick}{proverbot}{synthesizer}{synth_size}{timeout}{debug}"
+    return f"{quickchick}{proverbot}{synthesizer}{synth_size}{timeout}"
 
 def parse_arguments() -> Tuple[argparse.Namespace, argparse.ArgumentParser]:
     parser = argparse.ArgumentParser(
@@ -40,13 +39,13 @@ def parse_arguments() -> Tuple[argparse.Namespace, argparse.ArgumentParser]:
     parser.add_argument('--debug', default=False, action='store_true')
     return parser.parse_args()
 
-def run_on_project(project_path,log_directory,cwd,parameters):
+def run_on_project(project_path,log_directory,cwd,parameters,debug):
     # Run all pre-processing
     helper_lemmas, all_lemmas = prepare(project_path,cwd)
     if helper_lemmas == None:
         return None, None, None, None
     # Create folders for each of the examples
-    lfind_folders, lfind_folder = invoke_lfind(helper_lemmas,project_path,lfind_parameters=parameters)
+    lfind_folders, lfind_folder = invoke_lfind(helper_lemmas,project_path,lfind_parameters=parameters,debug=debug)
     # Set log directory if not provided
     log_folder = log_directory if log_directory is not None else os.path.join(os.path.dirname(lfind_folder),"RESULTS")
     if os.path.isdir(log_folder) == False:
@@ -103,6 +102,7 @@ def main() -> None:
     clean = args.clean
     lfind_files = args.lfind_files
     parameters = set_lfind_parameters(args)
+    debug = args.debug
 
     if args.rerun:
         # This option processes the logs differently (because we don't maintain access to which file had created it)
@@ -125,7 +125,7 @@ def main() -> None:
             print("Path provided doesn't exist. Try again.")
             return None
         # Run for the project and get the result folders
-        result, result_folder, lemmas, lfind_folder = run_on_project(project_path=project_path,log_directory=result_folder,cwd=cwd, parameters=parameters)
+        result, result_folder, lemmas, lfind_folder = run_on_project(project_path=project_path,log_directory=result_folder,cwd=cwd, parameters=parameters, debug=debug)
         # Process the results
         if result is not [] and result is not None:
             csv_content = process_results(result,result_folder,clean)
@@ -150,7 +150,7 @@ def main() -> None:
             os.mkdir(directory)
             shutil.copy(file_path,directory)
             # We can then pass this folder into the run_on_project function
-            result, result_folder, lemmas, lfind_folder = run_on_project(project_path=directory,log_directory=result_folder,cwd=cwd,parameters=parameters)
+            result, result_folder, lemmas, lfind_folder = run_on_project(project_path=directory,log_directory=result_folder,cwd=cwd,parameters=parameters,debug=debug)
             # Process the results
             if result is not [] and result is not None:
                 csv_content = process_results(result,result_folder,clean)
@@ -176,7 +176,7 @@ def main() -> None:
             # Make sure that bench folder exists
             bench_path = os.path.join(parent_path,bench)  
             if os.path.isdir(bench_path):
-                result, result_folder, lemmas, lfind_folder = run_on_project(project_path=bench_path,log_directory=log_folder,cwd=cwd,parameters=parameters)
+                result, result_folder, lemmas, lfind_folder = run_on_project(project_path=bench_path,log_directory=log_folder,cwd=cwd,parameters=parameters,debug=debug)
                 if result is not [] and result is not None:
                     p = process_results(result,result_folder,lemmas,clean)
                     csv_content.append(p)
