@@ -14,6 +14,8 @@ def check_proverbot():
     weights = os.path.join(os.path.join(prover_path,"data"),"polyarg-weights.dat")
     prelude = os.path.join(os.path.dirname(os.path.realpath(__file__)),"proverbot_example")
     files = [("test_one",False),("test_two",True)]
+    # Need to compile the coq projects first
+    subprocess.getoutput(f"cd {prelude} && make")
     cmds = []
     for file,result in files:
         report_path = os.path.join(prelude,f"search-report-{file}")
