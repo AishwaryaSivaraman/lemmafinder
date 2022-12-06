@@ -1,0 +1,9 @@
+DIGEST b7f2341185643cf064fcdc2c0d4c24fa
+Flia.test_one
+prf 6:15 <> test_false
+R28:30 Coq.Init.Datatypes <> nat ind
+R33:33 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R37:40 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R34:34 Coq.Init.Datatypes <> S constr
+R36:36 lia.test_one <> n var
+R41:41 lia.test_one <> n var
