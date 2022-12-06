@@ -109,10 +109,14 @@ def driver():
     result = check_proverbot() and result
     result = check_coqsynth() and result
     # result = check_myth() and result # Might not be necessary if we are moving forward with coq-synth
+    
     if result:
         print("All external dependencies seem to be set up properly.")
     else:
         print("At least one external dependency is not running properly.")
+    
+    # Return the result (i.e. if the external tools are behaving as expected)
+    return result
 
 
 if __name__ == "__main__":
