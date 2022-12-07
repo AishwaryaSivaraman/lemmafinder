@@ -1,6 +1,8 @@
 import os
 import subprocess
 
+files_to_keep = ["Makefile","Makefile.conf","_CoqProject"]
+
 def check_proverbot():
     # Make sure that the Proverbot path is set up
     prover_path = os.environ.get("PROVERBOT")
@@ -14,6 +16,7 @@ def check_proverbot():
     weights = os.path.join(os.path.join(prover_path,"data"),"polyarg-weights.dat")
     prelude = os.path.join(os.path.dirname(os.path.realpath(__file__)),"proverbot_example")
     files = [("test_one",False),("test_two",True)]
+
     # Need to compile the coq projects first
     subprocess.getoutput(f"cd {prelude} && make")
     cmds = []
@@ -22,22 +25,20 @@ def check_proverbot():
         cmd = f"timeout 30 python3 {script} --prelude={prelude} --weightsfile={weights} {file}.v --no-generate-report --max-proof-time=15 -P -o {report_path}"
         cmds.append((cmd,result,report_path,file))
 
-    # First need to clear out previous attempts to run the testing script
-    dir_to_delete = []
-    for item in os.listdir(prelude):
-        if item.startswith("search-report-"):
-            dir_to_delete.append(os.path.join(prelude,item))
-    for dir in dir_to_delete: os.system(f"rm -R {dir}")
-
     # Now we want to run the command to ensure that Proverbot is working
     check = True
     for cmd,exp,result_path,file in cmds:
         output_initial = subprocess.getoutput(cmd)
 
         # Process the results to see if Proverbot was able to run
-        if "ModuleNotFoundError: No module named 'coq-serapy'" in output_initial:
+        if "ModuleNotFoundError: No module named 'coq_serapy'" in output_initial:
             print(" * CoqSerapy Module is not installed.")
-            print("     --> be sure to run \"make setup\" in the Proverbot directory.")
+            print("     --> be sure to run \"make setup\" in the Proverbot directory to install all needed dependencies.")
+            print("         --> you may need to run \"cd {coq-synth path} && opam install . --deps-only && dune build && dune install\" again to update dependencies.")
+            return False
+        elif f"FileNotFoundError: [Errno 2] No such file or directory: '{prover_path}/data/polyarg-weights.dat'" in output_initial:
+            print(" * Weights not initialized for Proverbot")
+            print("     --> be sure to run \"make download-weights\" in the Proverbot directory.")
             return False
         
         # See if the information is correct
@@ -50,6 +51,14 @@ def check_proverbot():
     # Report results
     if not check:
         print(" * Ran Proverbot successfully, but results were incorrect.")
+
+    # Clean out the create files
+    remove = []
+    for item in os.listdir(prelude):
+        if item not in files_to_keep and not item.endswith(".v"):
+            remove.append(item)
+    for item in remove: os.system(f"rm -R {os.path.join(prelude,item)}")
+
     return check
 
 def check_coqsynth():
@@ -80,6 +89,15 @@ def check_coqsynth():
         print(" * Coq-Synth is not set up properly.")
         print("     --> be sure to clone coq-synth from \"https://github.com/qsctr/coq-synth\"")
         print("     --> run the command: \"cd {coq-synth path} && opam install . --deps-only && dune build && dune install")
+        print("     --> if another version of coq is pinned run: \"opam pin add coq 8.11.0\" or a new version of coq")
+
+    # Clean out the create files
+    remove = []
+    for file in os.listdir(example_dir):
+        if file not in files_to_keep and not file.endswith(".v"):
+            remove.append(file)
+    for item in remove: os.system(f"rm -R {os.path.join(example_dir,item)}")
+    
     return result
 
 def check_myth():
@@ -109,7 +127,7 @@ def driver():
     result = check_proverbot() and result
     result = check_coqsynth() and result
     # result = check_myth() and result # Might not be necessary if we are moving forward with coq-synth
-    
+
     if result:
         print("All external dependencies seem to be set up properly.")
     else:
