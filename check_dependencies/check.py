@@ -1,9 +1,10 @@
 import os
 import subprocess
+import argparse
 
 files_to_keep = ["Makefile","Makefile.conf","_CoqProject"]
 
-def check_proverbot():
+def check_proverbot(printing):
     # Make sure that the Proverbot path is set up
     prover_path = os.environ.get("PROVERBOT")
     if prover_path == None:
@@ -30,16 +31,38 @@ def check_proverbot():
     for cmd,exp,result_path,file in cmds:
         output_initial = subprocess.getoutput(cmd)
 
-        # Process the results to see if Proverbot was able to run
+        # Process the results to see if Proverbot was able to run... specifically what may be causing any error
         if "ModuleNotFoundError: No module named 'coq_serapy'" in output_initial:
             print(" * CoqSerapy Module is not installed.")
             print("     --> be sure to run \"make setup\" in the Proverbot directory to install all needed dependencies.")
             print("         --> you may need to run \"cd {coq-synth path} && opam install . --deps-only && dune build && dune install\" again to update dependencies.")
-            return False
+            check = False
+            break
         elif f"FileNotFoundError: [Errno 2] No such file or directory: '{prover_path}/data/polyarg-weights.dat'" in output_initial:
             print(" * Weights not initialized for Proverbot")
             print("     --> be sure to run \"make download-weights\" in the Proverbot directory.")
-            return False
+            check = False
+            break
+        else:
+            if "command not found: sertop" in output_initial:
+                print(" * Opam dependencies for Proverbot not downloaded properly.")
+                check = False
+                break
+            dependencies = ["scikit-learn","sexpdata","torch","torchvision","yattag","pampy","pygraphviz","tqdm","pathlib_revised","sparse_list","tensorboard","maturin"]
+            for d in dependencies:
+                if f"ModuleNotFoundError: No module named '{d}'" in output_initial:
+                    print(f" * {d} has not been added to the pip enivornment. [Proverbot dependency]")
+                    print("     --> be sure to run \"make setup\" in the Proverbot directory to install all needed dependencies.")
+                    print(f"     --> can independently install with command: \"pip install --user {d}.")
+                    print("     --> ensure that the version of pip that you're using (or that is in setup.sh is compatible with your version of python")
+                    check = False
+                    break
+            if check == False: break
+            if "ModuleNotFoundError: No module named 'dataloader'" in output_initial or "command not found: rustup" in output_initial:
+                print(" * Rust didn't compile. [Proverbot dependency]")
+                print("     --> try running command: \"rustup toolchain install nightly\"")
+                check = False
+                break
         
         # See if the information is correct
         result_file = os.path.join(result_path,f"{file}-proofs.txt")
@@ -50,7 +73,7 @@ def check_proverbot():
     
     # Report results
     if not check:
-        print(" * Ran Proverbot successfully, but results were incorrect.")
+        print(" * Error running Proverbot.")
 
     # Clean out the create files
     remove = []
@@ -59,9 +82,13 @@ def check_proverbot():
             remove.append(item)
     for item in remove: os.system(f"rm -R {os.path.join(prelude,item)}")
 
+    if not check and printing:
+        print("Output from running Proverbot:")
+        print(output_initial)
+
     return check
 
-def check_coqsynth():
+def check_coqsynth(printing):
     # Make sure the example that we are testing on is compiled
     # (This step might not be necessary if we are using the same example that is already compiled)
     dir = os.path.dirname(os.path.realpath(__file__))
@@ -90,6 +117,9 @@ def check_coqsynth():
         print("     --> be sure to clone coq-synth from \"https://github.com/qsctr/coq-synth\"")
         print("     --> run the command: \"cd {coq-synth path} && opam install . --deps-only && dune build && dune install")
         print("     --> if another version of coq is pinned run: \"opam pin add coq 8.11.0\" or a new version of coq")
+        if printing:
+            print("CoqSynth Output from running:")
+            print(output)
 
     # Clean out the create files
     remove = []
@@ -97,7 +127,7 @@ def check_coqsynth():
         if file not in files_to_keep and not file.endswith(".v"):
             remove.append(file)
     for item in remove: os.system(f"rm -R {os.path.join(example_dir,item)}")
-    
+
     return result
 
 def check_myth():
@@ -123,9 +153,11 @@ def check_other_paths():
     return result
 
 def driver():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--print', default=False, action='store_true')
     result = check_other_paths()
-    result = check_proverbot() and result
-    result = check_coqsynth() and result
+    result = check_proverbot(parser.parse_args().print) and result
+    result = check_coqsynth(parser.parse_args().print) and result
     # result = check_myth() and result # Might not be necessary if we are moving forward with coq-synth
 
     if result:
