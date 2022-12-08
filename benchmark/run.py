@@ -141,12 +141,13 @@ def run(source_folder, helper_lemma_dict, log_directory, all_lemmas_from_file, e
                     if '*' in first_index_val or '-' in first_index_val or '+' in first_index_val or '{' in first_index_val:
                         lfind_tactic = first_index_val
                     if lemma_name in c_line_content[i]:
-                        if debug:
-                            c_modified_content.append(lfind_tactic + f" lfind_debug_{synthesizer}")
-                        elif run_till_cat_1:
-                            c_modified_content.append(lfind_tactic + " lfind_cat1")
-                        else:
-                            c_modified_content.append(lfind_tactic + f" lfind_{synthesizer}")
+                        c_modified_content.append(lfind_tactic + " lfind")
+                        # if debug:
+                        #     c_modified_content.append(lfind_tactic + f" lfind_debug_{synthesizer}")
+                        # elif run_till_cat_1:
+                        #     c_modified_content.append(lfind_tactic + " lfind_cat1")
+                        # else:
+                        #     c_modified_content.append(lfind_tactic + f" lfind_{synthesizer}")
                     else:
                         c_modified_content.append(c_line_content[i])
                 lfind_content.append(". ".join(c_modified_content))
@@ -432,11 +433,11 @@ def get_lfind_decl(args):
     if args.debug:
         lfind_decl += "Set Lfind Debug.\n"
     if args.synthesizer != "coqsynth":
-        lfind_decl += f"Set Lfind Synthesizer {args.synthesizer}.\n"
+        lfind_decl += f"Set Lfind Synthesizer \"{args.synthesizer}\".\n"
     if args.synth_timeout != 12:
-        lfind_decl += f"Set Lfind Timeout {args.synth_timeout}.\n"
+        lfind_decl += f"Set Lfind SynthTimeout \"{args.synth_timeout}\".\n"
     if args.synth_batch_size != 6:
-        lfind_decl += f"Set Lfind BatchSize {args.synth_batch_size}.\n"
+        lfind_decl += f"Set Lfind BatchSize \"{args.synth_batch_size}\".\n"
     return lfind_decl
 
 def main() -> None:

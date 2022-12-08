@@ -68,7 +68,7 @@ let _ =
 let _ =
   let gdopt=
     { optdepr=false;
-      optkey=["Lfind";"Timeout"];
+      optkey=["Lfind";"SynthTimeout"];
       optname="Choose the timeout";
       optread=(fun () -> !timeout);
       optwrite=(fun time -> timeout := time)}
