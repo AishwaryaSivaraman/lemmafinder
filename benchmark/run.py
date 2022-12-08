@@ -142,12 +142,6 @@ def run(source_folder, helper_lemma_dict, log_directory, all_lemmas_from_file, e
                         lfind_tactic = first_index_val
                     if lemma_name in c_line_content[i]:
                         c_modified_content.append(lfind_tactic + " lfind")
-                        # if debug:
-                        #     c_modified_content.append(lfind_tactic + f" lfind_debug_{synthesizer}")
-                        # elif run_till_cat_1:
-                        #     c_modified_content.append(lfind_tactic + " lfind_cat1")
-                        # else:
-                        #     c_modified_content.append(lfind_tactic + f" lfind_{synthesizer}")
                     else:
                         c_modified_content.append(c_line_content[i])
                 lfind_content.append(". ".join(c_modified_content))

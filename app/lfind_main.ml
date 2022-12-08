@@ -115,7 +115,7 @@ let construct_state_as_lemma gl =
       in !contanins_forall, (Consts.fmt "Lemma %s %s %s:%s.\nAdmitted." Consts.lfind_lemma vars_all (String.concat " " all_hyps) conc), typs, var_typs, vars, hyps_str
     )
 
-let lfind_tac (debug: bool) (synthesizer: string) : unit Proofview.tactic =
+let lfind_tac : unit Proofview.tactic =
   Consts.start_time := int_of_float(Unix.time ());
   Log.is_debug := !Opts.debug;
   Proofview.Goal.enter
@@ -143,7 +143,7 @@ let lfind_tac (debug: bool) (synthesizer: string) : unit Proofview.tactic =
         let p_ctxt = {p_ctxt with modules = module_names; types = typs; hypotheses = hyps; all_vars = vars}
         (* If myth is chosen as the synthesizer, generate .ml file and check if it is parsable by myth *)
         in
-        if String.equal synthesizer "myth" then
+        if String.equal !Consts.synthesizer "myth" then
         (
           let ml_file = Consts.fmt "%s/%s_lfind_orig.ml" p_ctxt.dir p_ctxt.fname
           in 
@@ -188,7 +188,7 @@ let lfind_tac (debug: bool) (synthesizer: string) : unit Proofview.tactic =
         
         let coq_examples = Examples.dedup_examples (FileUtils.read_file example_file)
         in LogUtils.write_tbl_list_to_log coq_examples "Coq Examples";
-        let ml_examples = if String.equal synthesizer "myth" then
+        let ml_examples = if String.equal !Consts.synthesizer "myth" then
         (
           Examples.get_ml_examples coq_examples p_ctxt
         ) else coq_examples
