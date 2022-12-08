@@ -7,8 +7,8 @@ let run p_ctxt conjecture_name examples params output_type=
   in 
   let funcs = String.concat "," p_ctxt.funcs
   in let examples_op = String.concat " " examples
-  in let timeout_cmd = Consts.fmt "timeout  %s" Consts.synthesizer_timeout
-  in let coq_synth_cmd = Consts.fmt  "%s --logical-dir=%s --physical-dir='%s' --module=%s --type=%s --params=%s --extra-exprs=%s --examples='%s' --num-terms=%d > %s" coq_synth_path p_ctxt.namespace p_ctxt.original_dir p_ctxt.fname output_type params funcs examples_op Consts.myth_batch_size coq_synth_output_path
+  in let timeout_cmd = Consts.fmt "timeout  %s" !Consts.synthesizer_timeout
+  in let coq_synth_cmd = Consts.fmt  "%s --logical-dir=%s --physical-dir='%s' --module=%s --type=%s --params=%s --extra-exprs=%s --examples='%s' --num-terms=%d > %s" coq_synth_path p_ctxt.namespace p_ctxt.original_dir p_ctxt.fname output_type params funcs examples_op !Consts.synth_batch_size coq_synth_output_path
   in Log.debug (Consts.fmt "CoqSynth Command is %s\n"  (Consts.fmt "%s %s" timeout_cmd  coq_synth_cmd));
   let run_myth = run_cmd (Consts.fmt "%s %s" timeout_cmd  coq_synth_cmd)
   in (List.rev (read_file coq_synth_output_path))

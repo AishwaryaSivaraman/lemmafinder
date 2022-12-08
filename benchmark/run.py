@@ -27,6 +27,8 @@ def parse_arguments() -> Tuple[argparse.Namespace, argparse.ArgumentParser]:
     parser.add_argument('--no-quickchick', default=False, action='store_true')
     parser.add_argument('--no-proverbot', default=False, action='store_true')
     parser.add_argument('--synthesizer', default="coqsynth", type=str)
+    parser.add_argument('--synth_timeout', default=12, type=int)
+    parser.add_argument('--synth_batch_size', default=6, type=int)
     parser.add_argument('--example_dir', default=None)
     parser.add_argument('--getting_started', default=False, action='store_true')
     parser.add_argument('--small', default=False, action='store_true')
@@ -427,6 +429,14 @@ def get_lfind_decl(args):
         lfind_decl += "Unset Lfind QuickChick.\n"
     if args.no_proverbot:
         lfind_decl += "Unset Lfind Proverbot.\n"
+    if args.debug:
+        lfind_decl += "Set Lfind Debug.\n"
+    if args.synthesizer != "coqsynth":
+        lfind_decl += f"Set Lfind Synthesizer {args.synthesizer}.\n"
+    if args.synth_timeout != 12:
+        lfind_decl += f"Set Lfind Timeout {args.synth_timeout}.\n"
+    if args.synth_batch_size != 6:
+        lfind_decl += f"Set Lfind BatchSize {args.synth_batch_size}.\n"
     return lfind_decl
 
 def main() -> None:

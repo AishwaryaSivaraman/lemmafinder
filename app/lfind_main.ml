@@ -117,11 +117,14 @@ let construct_state_as_lemma gl =
 
 let lfind_tac (debug: bool) (synthesizer: string) : unit Proofview.tactic =
   Consts.start_time := int_of_float(Unix.time ());
-  Log.is_debug := debug;
+  Log.is_debug := !Opts.debug;
   Proofview.Goal.enter
   begin fun gl ->
-    Consts.synthesizer := synthesizer;
-    print_endline("The synthesizer used is " ^ !Consts.synthesizer);
+    Consts.synthesizer := !Opts.synthesizer;
+    Consts.synthesizer_timeout := !Opts.timeout;
+    Consts.synth_batch_size := int_of_string !Opts.synth_batch_size;
+    print_endline("The synthesizer used is " ^ !Consts.synthesizer ^ "with batch size " ^ string_of_int !Consts.synth_batch_size ^ " and timeout of " ^ !Consts.synthesizer_timeout);
+    print_endline("Debugging running: " ^ string_of_bool !Log.is_debug);
     let is_running = Utils.get_env_var "is_lfind"
     in 
     if String.equal is_running "true" then Tacticals.New.tclZEROMSG (Pp.str ("LFind is already running! Aborting"))

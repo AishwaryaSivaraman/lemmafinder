@@ -13,7 +13,7 @@
  (flags :standard -rectypes -w -27) 
 
  (libraries 
-   coq.library
+   coq.library                      ; needed to allow for hyper-parameters to be passed in through coq
    coq.vernac                       ; needed for vernac extend
    coq.plugins.ltac                 ; needed for tactic extend
    lfindalgo                        ;
